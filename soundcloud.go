@@ -33,8 +33,7 @@ func NewSoundcloudApi(c string, cs string, callback string) (*SoundcloudApi, err
         {c: "Client Id cannot be Blank"},
         {cs: "Client Secret cannot be Blank"},
     }
-    err := validateNotEmptyString(v)
-    if err != nil {
+    if err := validateNotEmptyString(v); err != nil {
         return nil, err
     }
     conf := &oauth2.Config{
@@ -56,8 +55,7 @@ func (s *SoundcloudApi) PasswordCredentialsToken(u string, p string) (bool, erro
         {u: "Username/Email cannot be Blank"},
         {p: "Password cannot be Blank"},
     }
-    err := validateNotEmptyString(v)
-    if err != nil {
+    if err := validateNotEmptyString(v); err != nil {
         return false, err
     }
     tok, err := s.conf.PasswordCredentialsToken(oauth2.NoContext, u, p)
@@ -72,7 +70,7 @@ func (s *SoundcloudApi) PasswordCredentialsToken(u string, p string) (bool, erro
 func (s *SoundcloudApi) Get(url string, p map[string][]string) (*http.Response, error) {
     url = cleanUrlPrefix(url)
     if len(p) > 0 {
-        url = buildGetParams(url, p)
+        url = buildUrlParams(url, p)
     }
     prefixBaseUrlApi(&url)
     var err error
@@ -86,7 +84,7 @@ func (s *SoundcloudApi) Get(url string, p map[string][]string) (*http.Response, 
 func (s *SoundcloudApi) Post(url string, p map[string][]string) (*http.Response, error) {
     url = cleanUrlPrefix(url)
     if len(p) != 0 {
-        url = buildGetParams(url, p)
+        url = buildUrlParams(url, p)
     }
     prefixBaseUrlApi(&url)
     var err error
@@ -103,14 +101,20 @@ func prefixBaseUrlApi(url *string) {
 }
 
 // build queryParams for a GET Request
-func buildGetParams(uri string, p map[string][]string) string {
+func buildUrlParams(uri string, p map[string][]string) string {
     if len(p) == 0 {
         return uri
     }
-    values := new(url.Values)
+    values := url.Values{}
+    oldKey := ""
     for k, v := range p {
         for _, v := range v {
-            values.Add(k, v)
+            if oldKey != k {
+                values.Set(k, v)
+            } else {
+                values.Add(k, v)
+            }
+            oldKey = k
         }
     }
     return uri + "?" + values.Encode()
