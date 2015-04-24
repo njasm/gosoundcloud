@@ -38,8 +38,8 @@ func NewSoundcloudApi(c string, cs string, callback string) (*SoundcloudApi, err
         return nil, err
     }
     conf := &oauth2.Config{
-        ClientID:     c, //"8427643cbe50e5302f955814f98dccfe",
-        ClientSecret: cs, //"c844cf0f21296d2643a717b34c145556",
+        ClientID:     c, //"CLIENT ID",
+        ClientSecret: cs, //"CLIENT SECRET",
         RedirectURL:  callback, //"YOUR_REDIRECT_URL",
         Scopes: []string{"non-expiring"},
         Endpoint: oauth2.Endpoint{
