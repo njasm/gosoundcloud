@@ -3,14 +3,69 @@ package gosound
 import (
     "testing"
     "golang.org/x/oauth2"
+    "io/ioutil"
+    "fmt"
+    "net/url"
+    "os"
+    "bufio"
+    "strings"
+    "io"
 )
 
-const (
-    CLIENT_ID = "8427643cbe50e5302f955814f98dccfe"
-    CLIENT_SECRET = "c844cf0f21296d2643a717b34c145556"
-    USERNAME = "blindedspecie@gmail.com"
-    PASSWD = "fullon!2014"
-)
+var client_id string
+var client_secret string
+var username string
+var passwd string
+
+func init() {
+    f, err := os.Open(".env")
+    if err != nil {
+        os.Exit(1)
+    }
+    defer f.Close()
+    reader := bufio.NewReader(f)
+    eof := false
+    for lino := 0; !eof; lino++ {
+        line, _, err := reader.ReadLine()
+        if err == io.EOF {
+            err = nil
+            eof = true
+            continue
+        }
+        parts := strings.Split(string(line), "=")
+        switch parts[0] {
+            case "CLIENT_ID":
+                client_id = parts[1]
+            case "CLIENT_SECRET":
+                client_secret = strings.TrimSpace(parts[1])
+            case "USERNAME":
+                username = strings.TrimSpace(parts[1])
+            case "PASSWD":
+                passwd = strings.TrimSpace(parts[1])
+            default:
+                fmt.Println("ERROR!!")
+        }
+    }
+}
+
+func TestNewSoundcloudApi(t *testing.T) {
+    s, err := NewSoundcloudApi(client_id, client_secret, "")
+    _, err = s.PasswordCredentialsToken(username, passwd)
+    if err != nil {
+        t.Error(err)
+    }
+    getParams := url.Values{}
+    getParams.Set("q", "travis")
+    r, err := s.Get("/tracks", getParams)
+    if err != nil {
+        t.Error(err)
+    }
+    defer r.Body.Close()
+    body, err := ioutil.ReadAll(r.Body)
+
+    fmt.Println(string(body))
+
+}
 
 func TestDefaultTokenType(t *testing.T) {
     tok := oauth2.Token{}
