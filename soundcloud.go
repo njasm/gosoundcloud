@@ -5,10 +5,15 @@ import (
     "golang.org/x/oauth2"
     "net/http"
     "net/url"
+    "encoding/json"
+    "bytes"
+    //"os"
 )
 
 const (
     BaseApiURL = "https://api.soundcloud.com"
+    AuthURL = "https://soundcloud.com/connect"
+    TokenURL = "https://api.soundcloud.com/oauth2/token"
 )
 
 type SoundcloudApi struct {
@@ -42,8 +47,8 @@ func NewSoundcloudApi(c string, cs string, callback string) (*SoundcloudApi, err
         RedirectURL:  callback, //"YOUR_REDIRECT_URL",
         Scopes: []string{"non-expiring"},
         Endpoint: oauth2.Endpoint{
-            AuthURL:"https://soundcloud.com/connect",
-            TokenURL: "https://api.soundcloud.com/oauth2/token",
+            AuthURL: AuthURL,
+            TokenURL: TokenURL,
         },
     }
     return &SoundcloudApi{conf: conf}, nil
@@ -81,14 +86,43 @@ func (s *SoundcloudApi) Get(url string, p map[string][]string) (*http.Response, 
     return s.response, nil
 }
 
-func (s *SoundcloudApi) Post(url string, p map[string][]string) (*http.Response, error) {
+// make a post request, data interface will be json encoded
+func (s *SoundcloudApi) Post(url string, data interface{}) (*http.Response, error) {
     url = cleanUrlPrefix(url)
-    if len(p) != 0 {
-        url = buildUrlParams(url, p)
-    }
     prefixBaseUrlApi(&url)
-    var err error
-    s.response, err = s.httpClient.Get(url)
+    body, err := json.Marshal(data)
+    if err != nil {
+        return nil, err
+    }
+    reader := bytes.NewReader(body)
+    req, err := http.NewRequest("POST", url, reader)
+    if err != nil {
+        return nil, err
+    }
+    req.ContentLength = int64(reader.Len())
+    req.Header.Set("content-type", "application/json")
+    s.response, err = s.httpClient.Do(req)
+    if err != nil {
+        return nil, err
+    }
+    return s.response, nil
+}
+
+func (s *SoundcloudApi) Put(url string, data interface{}) (*http.Response, error) {
+    url = cleanUrlPrefix(url)
+    prefixBaseUrlApi(&url)
+    body, err := json.Marshal(data)
+    if err != nil {
+        return nil, err
+    }
+    reader := bytes.NewReader(body)
+    req, err := http.NewRequest("PUT", url, reader)
+    if err != nil {
+        return nil, err
+    }
+    req.ContentLength = int64(reader.Len())
+    req.Header.Set("content-type", "application/json")
+    s.response, err = s.httpClient.Do(req)
     if err != nil {
         return nil, err
     }
