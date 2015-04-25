@@ -15,7 +15,7 @@ Still missing complete map of soundcloud resources to structs, helper functions,
 * User Authorization/Authentication
 * Media File Download/Upload
 
-### Naive Example
+#### Naive Example
 
 ```go
 // empty string is callback url (optional)
