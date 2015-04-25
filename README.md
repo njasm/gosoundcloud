@@ -15,3 +15,26 @@ Still missing complete map of soundcloud resources to structs, helper functions,
 * User Authorization/Authentication
 * Media File Download/Upload
 
+### Naive Example
+
+```go
+s, err := NewSoundcloudApi("client_id", "client_secret", "") // empty string is callback url (optional)
+_, err = s.PasswordCredentialsToken("your_email@something.com", "your_password")
+if err != nil {
+    t.Error(err)
+}
+getParams := url.Values{}
+getParams.Set("q", "HybridSpecies")
+r, err := s.Get("/tracks", getParams)
+if err != nil {
+    fmt.Println(err)
+    os.Exit(1)
+}
+data, err = ioutil.ReadAll(r.Body)
+r.Body.Close()
+if err != nil {
+    fmt.Println(err)
+    os.Exit(1)
+}
+fmt.Println(string(data))
+```
