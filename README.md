@@ -2,7 +2,8 @@
 
 ## Soundcloud.com API for GO
 
-Package is already usable, but still under heavy development, resource structs, helper functions, etc to come.
+Package is already usable, but still under heavy development, API might change!
+Still missing complete map of soundcloud resources to structs, helper functions, etc.
 
 #### Implemented features 
 
