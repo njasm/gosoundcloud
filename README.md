@@ -18,7 +18,8 @@ Still missing complete map of soundcloud resources to structs, helper functions,
 ### Naive Example
 
 ```go
-s, err := NewSoundcloudApi("client_id", "client_secret", "") // empty string is callback url (optional)
+// empty string is callback url (optional)
+s, err := NewSoundcloudApi("client_id", "client_secret", "")
 _, err = s.PasswordCredentialsToken("your_email@something.com", "your_password")
 if err != nil {
     t.Error(err)
