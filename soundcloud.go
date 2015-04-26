@@ -8,6 +8,7 @@ import (
     "encoding/json"
     "bytes"
     //"os"
+    //"strings"
 )
 
 const (
@@ -78,55 +79,83 @@ func (s *SoundcloudApi) Get(url string, p map[string][]string) (*http.Response, 
         url = buildUrlParams(url, p)
     }
     prefixBaseUrlApi(&url)
-    var err error
-    s.response, err = s.httpClient.Get(url)
+    req, err := http.NewRequest("GET", url, nil)
     if err != nil {
         return nil, err
     }
-    return s.response, nil
+
+    return s.do(req)
 }
 
 // make a post request, data interface will be json encoded
 func (s *SoundcloudApi) Post(url string, data interface{}) (*http.Response, error) {
     url = cleanUrlPrefix(url)
     prefixBaseUrlApi(&url)
+
     body, err := json.Marshal(data)
     if err != nil {
         return nil, err
     }
+
     reader := bytes.NewReader(body)
     req, err := http.NewRequest("POST", url, reader)
     if err != nil {
         return nil, err
     }
+
     req.ContentLength = int64(reader.Len())
     req.Header.Set("content-type", "application/json")
-    s.response, err = s.httpClient.Do(req)
-    if err != nil {
-        return nil, err
-    }
-    return s.response, nil
+
+    return s.do(req)
 }
 
 func (s *SoundcloudApi) Put(url string, data interface{}) (*http.Response, error) {
     url = cleanUrlPrefix(url)
     prefixBaseUrlApi(&url)
+
     body, err := json.Marshal(data)
     if err != nil {
         return nil, err
     }
+
     reader := bytes.NewReader(body)
     req, err := http.NewRequest("PUT", url, reader)
     if err != nil {
         return nil, err
     }
+
     req.ContentLength = int64(reader.Len())
     req.Header.Set("content-type", "application/json")
-    s.response, err = s.httpClient.Do(req)
+
+    return s.do(req)
+}
+
+func (s *SoundcloudApi) Delete(url string) (*http.Response, error) {
+    url = cleanUrlPrefix(url)
+    prefixBaseUrlApi(&url)
+
+    req, err := http.NewRequest("DELETE", url, nil)
     if err != nil {
         return nil, err
     }
-    return s.response, nil
+
+    return s.do(req)
+}
+
+// resolves a soundcloud url and redirects automatically if found
+func (s *SoundcloudApi) Resolve(url string) (*http.Response, error) {
+    p := map[string][]string{
+        "url":{url},
+    }
+    url = buildUrlParams("/resolve", p)
+    prefixBaseUrlApi(&url)
+
+    req, err := http.NewRequest("GET", url, nil)
+    if err != nil {
+        return nil, err
+    }
+
+    return s.do(req)
 }
 
 // prefix the soundcloud baseUrlApi
@@ -168,4 +197,14 @@ func defaultTokenType(t *oauth2.Token) {
     if t.TokenType == "" {
         t.TokenType = "OAuth"
     }
+}
+
+// send http request
+func (s *SoundcloudApi) do(req *http.Request) (*http.Response, error) {
+    var err error
+    s.response, err = s.httpClient.Do(req)
+    if err != nil {
+        return nil, err
+    }
+    return s.response, nil
 }
