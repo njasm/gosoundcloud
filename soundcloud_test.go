@@ -21,29 +21,30 @@ var passwd string
 func init() {
     f, err := os.Open(".env")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
-    defer f.Close()
-    reader := bufio.NewReader(f)
-    for lino := 0; true; lino++ {
-        line, _, err := reader.ReadLine()
-        if err == io.EOF {
-            err = nil
-            break
-        }
-        parts := strings.Split(string(line), "=")
-        switch parts[0] {
-            case "CLIENT_ID":
+        //fmt.Println(err)
+        //os.Exit(1)
+    } else {
+        defer f.Close()
+        reader := bufio.NewReader(f)
+        for lino := 0; true; lino++ {
+            line, _, err := reader.ReadLine()
+            if err == io.EOF {
+                err = nil
+                break
+            }
+            parts := strings.Split(string(line), "=")
+            switch parts[0] {
+                case "CLIENT_ID":
                 client_id = parts[1]
-            case "CLIENT_SECRET":
+                case "CLIENT_SECRET":
                 client_secret = strings.TrimSpace(parts[1])
-            case "USERNAME":
+                case "USERNAME":
                 username = strings.TrimSpace(parts[1])
-            case "PASSWD":
+                case "PASSWD":
                 passwd = strings.TrimSpace(parts[1])
-            default:
+                default:
                 fmt.Println("ERROR!!")
+            }
         }
     }
 
