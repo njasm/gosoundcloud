@@ -14,7 +14,11 @@ var AuthURL = "https://soundcloud.com/connect"
 var TokenURL = "https://api.soundcloud.com/oauth2/token"
 
 type UrlParams struct {
-    Values      url.Values
+    url.Values
+}
+
+func NewUrlParams() UrlParams {
+    return UrlParams{url.Values{}}
 }
 
 type SoundcloudApi struct {
@@ -141,10 +145,8 @@ func (s *SoundcloudApi) Delete(url string) (*http.Response, error) {
 
 // resolves a soundcloud url and redirects automatically if found
 func (s *SoundcloudApi) Resolve(searchUrl string) (*http.Response, error) {
-    p := UrlParams{
-        Values: url.Values{},
-    }
-    p.Values.Set("url", searchUrl)
+    p := NewUrlParams()
+    p.Set("url", searchUrl)
     url := "/resolve"
     url = buildUrlWithParams(url, p)
     req, err := http.NewRequest("GET", url, nil)

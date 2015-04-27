@@ -84,9 +84,12 @@ func runHttpTestServer() {
     })
     http.HandleFunc("/resolve", func(w http.ResponseWriter, req *http.Request) {
         string := req.URL.Query().Encode()
-        fmt.Println(string)
         w.Header().Set("content-type", "application/json")
-        fmt.Fprint(w, "{[]}")
+        if string != "url=https%3A%2F%2Fsoundcloud.com%2Fhybrid-species" {
+            fmt.Fprint(w, "{\"result\": \"fail\"}")
+        } else {
+            fmt.Fprint(w, "{\"result\": \"sucess\"}")
+        }
     })
 
     http.ListenAndServe(":8282", nil)
