@@ -11,11 +11,9 @@ import (
     //"strings"
 )
 
-const (
-    BaseApiURL = "https://api.soundcloud.com"
-    AuthURL = "https://soundcloud.com/connect"
-    TokenURL = "https://api.soundcloud.com/oauth2/token"
-)
+var BaseApiURL = "https://api.soundcloud.com"
+var AuthURL = "https://soundcloud.com/connect"
+var TokenURL = "https://api.soundcloud.com/oauth2/token"
 
 type SoundcloudApi struct {
     conf        *oauth2.Config

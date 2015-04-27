@@ -2,14 +2,15 @@ package gosound
 
 import (
     "testing"
+    "net/http"
     "golang.org/x/oauth2"
-    "io/ioutil"
     "fmt"
-    "net/url"
     "os"
     "bufio"
     "strings"
     "io"
+    "reflect"
+    "time"
 )
 
 var client_id string
@@ -45,25 +46,137 @@ func init() {
                 fmt.Println("ERROR!!")
         }
     }
+
+    go runHttpTestServer()
+    fmt.Println("Sleeping 2 seconds..")
+    time.Sleep(2 * time.Second)
+}
+
+func runHttpTestServer() {
+    // http test's should be asserted here
+    // soundcloud delete body response: {"status":"200 - OK"}
+    http.HandleFunc("/oauth2/token", func(w http.ResponseWriter, req *http.Request) {
+        jresponse := "{\"expires_in\":86400, \"refresh_token\":\"18927670-R-2v8e8ycA419RaaVWY9Xz4APp\", \"access_token\":\"18926970-A-nMnSHDqg8Fsunm6Qx1cF1APp\"}"
+        w.Header().Set("content-type", "application/json")
+        fmt.Fprint(w, jresponse)
+    })
+    http.HandleFunc("/tracks", func(w http.ResponseWriter, req *http.Request) {
+        w.Header().Set("content-type", "application/json")
+        fmt.Fprint(w, "{[]}")
+    })
+    http.HandleFunc("/playlists", func(w http.ResponseWriter, req *http.Request) {
+        w.Header().Set("content-type", "application/json")
+        fmt.Fprint(w, "{[]}")
+    })
+    http.HandleFunc("/playlists/101716717", func(w http.ResponseWriter, req *http.Request) {
+        w.Header().Set("content-type", "application/json")
+        fmt.Fprint(w, "{[]}")
+    })
+    http.HandleFunc("/resolve", func(w http.ResponseWriter, req *http.Request) {
+        w.Header().Set("content-type", "application/json")
+        fmt.Fprint(w, "{[]}")
+    })
+
+    http.ListenAndServe(":8282", nil)
+}
+
+func getMockedSoundcloudApi() *SoundcloudApi {
+    conf := &oauth2.Config{
+        ClientID:     client_id, //"CLIENT ID",
+        ClientSecret: client_secret, //"CLIENT SECRET",
+        RedirectURL:  "", //"YOUR_REDIRECT_URL",
+        Scopes: []string{"non-expiring"},
+        Endpoint: oauth2.Endpoint{
+            AuthURL: "http://127.0.0.1:8282/auth",
+            TokenURL: "http://127.0.0.1:8282/oauth2/token",
+        },
+    }
+    s := &SoundcloudApi{conf: conf}
+    bt := reflect.ValueOf(&BaseApiURL)
+    v := bt.Elem()
+    v.SetString("http://127.0.0.1:8282")
+
+    return s
 }
 
 func TestNewSoundcloudApi(t *testing.T) {
+    s := getMockedSoundcloudApi()
+    _, err := s.PasswordCredentialsToken(username, passwd)
+    if err != nil {
+        t.Error(err)
+    }
+}
+
+func TestPost(t *testing.T) {
     s, err := NewSoundcloudApi(client_id, client_secret, "")
     _, err = s.PasswordCredentialsToken(username, passwd)
     if err != nil {
         t.Error(err)
     }
-    getParams := url.Values{}
-    getParams.Set("q", "travis")
-    r, err := s.Get("/tracks", getParams)
+    playlist := map[string]map[string]string{
+        "playlist":{
+            "title": "golang yay!",
+            "sharing": "public",
+        },
+    }
+
+    r, err := s.Post("/playlists", playlist)
+    r.Body.Close()
     if err != nil {
         t.Error(err)
     }
-    defer r.Body.Close()
-    body, err := ioutil.ReadAll(r.Body)
+}
 
-    fmt.Println(string(body))
+func TestPut(t *testing.T) {
+    s, err := NewSoundcloudApi(client_id, client_secret, "")
+    _, err = s.PasswordCredentialsToken(username, passwd)
+    if err != nil {
+        t.Error(err)
+    }
+    // {"playlist":{"tracks":[{"id":29720509},{"id":26057359}]}}
+    tracks := map[string]map[string][]map[string]uint64{
+        "playlist":{
+            "tracks": {
+                {"id": 29720509},
+                {"id": 26057359},
+            },
+        },
+    }
+    // playlists/101716717
+    r, err := s.Put("/playlists/101716717", tracks)
+    r.Body.Close()
+    if err != nil {
+        t.Error(err)
+    }
+}
 
+func TestDelete(t *testing.T) {
+    s, err := NewSoundcloudApi(client_id, client_secret, "")
+    _, err = s.PasswordCredentialsToken(username, passwd)
+    if err != nil {
+        t.Error(err)
+    }
+
+    // playlists/101716717
+    r, err := s.Delete("/playlists/101716717")
+    r.Body.Close()
+    if err != nil {
+        t.Error(err)
+    }
+}
+
+func TestResolve(t *testing.T) {
+    s := getMockedSoundcloudApi()
+    _, err := s.PasswordCredentialsToken(username, passwd)
+    if err != nil {
+        t.Error(err)
+    }
+
+    r, err := s.Resolve("https://soundcloud.com/hybrid-species")
+    r.Body.Close()
+    if err != nil {
+        t.Error(err)
+    }
 }
 
 func TestDefaultTokenType(t *testing.T) {
