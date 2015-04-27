@@ -13,6 +13,10 @@ var BaseApiURL = "https://api.soundcloud.com"
 var AuthURL = "https://soundcloud.com/connect"
 var TokenURL = "https://api.soundcloud.com/oauth2/token"
 
+type UrlParams struct {
+    Values      url.Values
+}
+
 type SoundcloudApi struct {
     conf        *oauth2.Config
     httpClient  *http.Client
@@ -70,12 +74,12 @@ func (s *SoundcloudApi) PasswordCredentialsToken(u string, p string) (bool, erro
 }
 
 // make a get request, p map are the url params
-func (s *SoundcloudApi) Get(url string, p map[string][]string) (*http.Response, error) {
-    url = cleanUrlPrefix(url)
-    if len(p) > 0 {
-        url = buildUrlParams(url, p)
+func (s *SoundcloudApi) Get(url string, p UrlParams) (*http.Response, error) {
+    if p.Values != nil {
+        url = buildUrlWithParams(url, p)
+    } else {
+        url = buildUrl(url)
     }
-    prefixBaseUrlApi(&url)
     req, err := http.NewRequest("GET", url, nil)
     if err != nil {
         return nil, err
@@ -86,9 +90,7 @@ func (s *SoundcloudApi) Get(url string, p map[string][]string) (*http.Response, 
 
 // make a post request, data interface will be encoded into json
 func (s *SoundcloudApi) Post(url string, data interface{}) (*http.Response, error) {
-    url = cleanUrlPrefix(url)
-    prefixBaseUrlApi(&url)
-
+    url = buildUrl(url)
     body, err := json.Marshal(data)
     if err != nil {
         return nil, err
@@ -108,9 +110,7 @@ func (s *SoundcloudApi) Post(url string, data interface{}) (*http.Response, erro
 
 // make a put request, data interface will be encoded into json
 func (s *SoundcloudApi) Put(url string, data interface{}) (*http.Response, error) {
-    url = cleanUrlPrefix(url)
-    prefixBaseUrlApi(&url)
-
+    url = buildUrl(url)
     body, err := json.Marshal(data)
     if err != nil {
         return nil, err
@@ -130,9 +130,7 @@ func (s *SoundcloudApi) Put(url string, data interface{}) (*http.Response, error
 
 // make a delete request
 func (s *SoundcloudApi) Delete(url string) (*http.Response, error) {
-    url = cleanUrlPrefix(url)
-    prefixBaseUrlApi(&url)
-
+    url = buildUrl(url)
     req, err := http.NewRequest("DELETE", url, nil)
     if err != nil {
         return nil, err
@@ -142,13 +140,13 @@ func (s *SoundcloudApi) Delete(url string) (*http.Response, error) {
 }
 
 // resolves a soundcloud url and redirects automatically if found
-func (s *SoundcloudApi) Resolve(url string) (*http.Response, error) {
-    p := map[string][]string{
-        "url":{url},
+func (s *SoundcloudApi) Resolve(searchUrl string) (*http.Response, error) {
+    p := UrlParams{
+        Values: url.Values{},
     }
-    url = buildUrlParams("/resolve", p)
-    prefixBaseUrlApi(&url)
-
+    p.Values.Set("url", searchUrl)
+    url := "/resolve"
+    url = buildUrlWithParams(url, p)
     req, err := http.NewRequest("GET", url, nil)
     if err != nil {
         return nil, err
@@ -157,37 +155,31 @@ func (s *SoundcloudApi) Resolve(url string) (*http.Response, error) {
     return s.do(req)
 }
 
-// prefix the soundcloud baseUrlApi
-func prefixBaseUrlApi(url *string) {
-    *url = BaseApiURL + *url
+func buildUrlWithParams(url string, p UrlParams) string {
+    url = buildUrl(url)
+    if len(p.Values) > 0 {
+        url = url + "?" + p.Values.Encode()
+    }
+    return url
 }
 
-// build queryParams for a GET Request
-func buildUrlParams(uri string, p map[string][]string) string {
-    if len(p) == 0 {
-        return uri
-    }
-    values := url.Values{}
-    oldKey := ""
-    for k, v := range p {
-        for _, v := range v {
-            if oldKey != k {
-                values.Set(k, v)
-            } else {
-                values.Add(k, v)
-            }
-            oldKey = k
-        }
-    }
-    return uri + "?" + values.Encode()
+func buildUrl(url string) string {
+    url = cleanUrlPrefix(url)
+    url = prefixBaseUrlApi(url)
+    return url
 }
 
 // adds a slash prefix if non-existent
 func cleanUrlPrefix(url string) string {
     if url[:1] != "/" {
-        return "/" + url
+        url = "/" + url
     }
     return url
+}
+
+// prefix the soundcloud baseUrlApi
+func prefixBaseUrlApi(url string) string {
+    return BaseApiURL + url
 }
 
 // work-around for Soundcloud OAuth2 implementation,

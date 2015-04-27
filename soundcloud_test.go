@@ -3,7 +3,6 @@ package gosound
 import (
     "testing"
     "net/http"
-    "net/url"
     "golang.org/x/oauth2"
     "fmt"
     "os"
@@ -84,6 +83,8 @@ func runHttpTestServer() {
         fmt.Fprint(w, "{[]}")
     })
     http.HandleFunc("/resolve", func(w http.ResponseWriter, req *http.Request) {
+        string := req.URL.Query().Encode()
+        fmt.Println(string)
         w.Header().Set("content-type", "application/json")
         fmt.Fprint(w, "{[]}")
     })
@@ -125,11 +126,11 @@ func TestGet(t *testing.T) {
         t.Error(err)
     }
 
-    r, err := s.Get("/me", url.Values{})
-    r.Body.Close()
+    r, err := s.Get("/me", UrlParams{})
     if err != nil {
         t.Error(err)
     }
+    r.Body.Close()
 }
 
 func TestPost(t *testing.T) {
@@ -218,22 +219,6 @@ func TestDefaultTokenType(t *testing.T) {
     }
 }
 
-func TestBuildUrlParams(t *testing.T) {
-    v := "/me"
-    p := make(map[string][]string)
-    result := buildUrlParams(v, p)
-    if result != v {
-        t.Errorf("Expected: %q, got: %q", v, result)
-    }
-
-    p["q"] = []string{"testString"}
-    result = buildUrlParams(v, p)
-    if result != "/me?q=testString" {
-        t.Errorf("Expected: %q, got: %q", "/me?q=testString", result)
-    }
-
-}
-
 func TestCleanUrlPrefix(t *testing.T) {
     v := "/with"
     expected := "/with"
@@ -252,7 +237,7 @@ func TestCleanUrlPrefix(t *testing.T) {
 func TestPrefixBaseUrlApi(t *testing.T) {
     value := "/me"
     expected := BaseApiURL + value
-    prefixBaseUrlApi(&value)
+    value = prefixBaseUrlApi(value)
     if expected != value {
         t.Errorf("Expected value: %q, got: %q", expected, value)
     }
