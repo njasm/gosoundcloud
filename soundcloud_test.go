@@ -19,7 +19,7 @@ var username string
 var passwd string
 
 func init() {
-    f, err := os.Open(".env")
+    f, err := os.Open(".env2")
     if err != nil {
         //fmt.Println(err)
         //os.Exit(1)
@@ -114,8 +114,8 @@ func TestNewSoundcloudApi(t *testing.T) {
 }
 
 func TestPost(t *testing.T) {
-    s, err := NewSoundcloudApi(client_id, client_secret, "")
-    _, err = s.PasswordCredentialsToken(username, passwd)
+    s := getMockedSoundcloudApi()
+    _, err := s.PasswordCredentialsToken(username, passwd)
     if err != nil {
         t.Error(err)
     }
@@ -134,8 +134,8 @@ func TestPost(t *testing.T) {
 }
 
 func TestPut(t *testing.T) {
-    s, err := NewSoundcloudApi(client_id, client_secret, "")
-    _, err = s.PasswordCredentialsToken(username, passwd)
+    s := getMockedSoundcloudApi()
+    _, err := s.PasswordCredentialsToken(username, passwd)
     if err != nil {
         t.Error(err)
     }
@@ -157,8 +157,8 @@ func TestPut(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-    s, err := NewSoundcloudApi(client_id, client_secret, "")
-    _, err = s.PasswordCredentialsToken(username, passwd)
+    s := getMockedSoundcloudApi()
+    _, err := s.PasswordCredentialsToken(username, passwd)
     if err != nil {
         t.Error(err)
     }
