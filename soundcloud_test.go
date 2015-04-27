@@ -23,6 +23,11 @@ func init() {
     if err != nil {
         //fmt.Println(err)
         //os.Exit(1)
+        // example data
+        client_id = "123456789"
+        client_secret = "987654321"
+        username = "john@doe.com"
+        passwd = "whynot"
     } else {
         defer f.Close()
         reader := bufio.NewReader(f)
