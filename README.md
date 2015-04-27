@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/njasm/gosound.svg?branch=master)](https://travis-ci.org/njasm/gosound) 
 [![Coverage Status](https://coveralls.io/repos/njasm/gosound/badge.svg?branch=master)](https://coveralls.io/r/njasm/gosound?branch=master)
 
 ## Soundcloud.com API for GO
