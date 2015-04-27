@@ -7,8 +7,6 @@ import (
     "net/url"
     "encoding/json"
     "bytes"
-    //"os"
-    //"strings"
 )
 
 var BaseApiURL = "https://api.soundcloud.com"
@@ -71,6 +69,7 @@ func (s *SoundcloudApi) PasswordCredentialsToken(u string, p string) (bool, erro
     return true, nil
 }
 
+// make a get request, p map are the url params
 func (s *SoundcloudApi) Get(url string, p map[string][]string) (*http.Response, error) {
     url = cleanUrlPrefix(url)
     if len(p) > 0 {
@@ -85,7 +84,7 @@ func (s *SoundcloudApi) Get(url string, p map[string][]string) (*http.Response, 
     return s.do(req)
 }
 
-// make a post request, data interface will be json encoded
+// make a post request, data interface will be encoded into json
 func (s *SoundcloudApi) Post(url string, data interface{}) (*http.Response, error) {
     url = cleanUrlPrefix(url)
     prefixBaseUrlApi(&url)
@@ -107,6 +106,7 @@ func (s *SoundcloudApi) Post(url string, data interface{}) (*http.Response, erro
     return s.do(req)
 }
 
+// make a put request, data interface will be encoded into json
 func (s *SoundcloudApi) Put(url string, data interface{}) (*http.Response, error) {
     url = cleanUrlPrefix(url)
     prefixBaseUrlApi(&url)
@@ -128,6 +128,7 @@ func (s *SoundcloudApi) Put(url string, data interface{}) (*http.Response, error
     return s.do(req)
 }
 
+// make a delete request
 func (s *SoundcloudApi) Delete(url string) (*http.Response, error) {
     url = cleanUrlPrefix(url)
     prefixBaseUrlApi(&url)

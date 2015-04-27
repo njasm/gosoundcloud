@@ -3,6 +3,7 @@ package gosound
 import (
     "testing"
     "net/http"
+    "net/url"
     "golang.org/x/oauth2"
     "fmt"
     "os"
@@ -70,6 +71,10 @@ func runHttpTestServer() {
         w.Header().Set("content-type", "application/json")
         fmt.Fprint(w, "{[]}")
     })
+    http.HandleFunc("/me", func(w http.ResponseWriter, req *http.Request) {
+        w.Header().Set("content-type", "application/json")
+        fmt.Fprint(w, "{[]}")
+    })
     http.HandleFunc("/playlists", func(w http.ResponseWriter, req *http.Request) {
         w.Header().Set("content-type", "application/json")
         fmt.Fprint(w, "{[]}")
@@ -108,6 +113,20 @@ func getMockedSoundcloudApi() *SoundcloudApi {
 func TestNewSoundcloudApi(t *testing.T) {
     s := getMockedSoundcloudApi()
     _, err := s.PasswordCredentialsToken(username, passwd)
+    if err != nil {
+        t.Error(err)
+    }
+}
+
+func TestGet(t *testing.T) {
+    s := getMockedSoundcloudApi()
+    _, err := s.PasswordCredentialsToken(username, passwd)
+    if err != nil {
+        t.Error(err)
+    }
+
+    r, err := s.Get("/me", url.Values{})
+    r.Body.Close()
     if err != nil {
         t.Error(err)
     }
