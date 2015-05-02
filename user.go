@@ -1,18 +1,21 @@
-package gosound
+package gosoundcloud
 
 import (
     "errors"
+    "encoding/json"
+    "strconv"
 )
 
 type User struct {
-    *resource
-    Avatar_url    string
-    Permalink     string
-    Username      string
-    Uri           string
-    Permalink_url string
+    Id                      uint64
+    Avatar_url              string
+    Permalink               string
+    Username                string
+    Uri                     string
+    Permalink_url           string
 
     // full struct
+    Kind                    string
     Last_modified           string
     First_name              string
     Last_name               string
@@ -39,17 +42,46 @@ type User struct {
 }
 
 func NewUser() *User {
-    r := newResource()
-    u := &User{}
-    u.resource = r
-    return u
+    return &User{Kind: "user"}
 }
 
-func (u *User) Update(s *SoundcloudApi) (bool, error) {
+func (u User) GetId() uint64 {
+    return u.Id
+}
+
+func (u User) GetKind() string {
+    return u.Kind
+}
+
+func (u User) IsNew() bool {
+    if u.Id > 0 {
+        return false
+    }
+    return true
+}
+
+func (u *User) Update(s *SoundcloudApi) error {
     if u.IsNew() {
-        return false, errors.New("User is new, cannot be updated!")
+        return errors.New("User is new, cannot be updated!")
     }
 
-    // send put request to soundcloud
-    return true, nil
+    url := "/users/" + strconv.FormatUint(u.Id, 10)
+    _, err := s.Put(url, u)
+    return err
+}
+
+func (u User) MarshalJSON() ([]byte, error) {
+    j := map[string]map[string]interface{}{
+        "user": {
+            "city": u.City,
+            "country": u.Country,
+            "description": u.Description,
+            "first_name": u.First_name,
+            "last_name": u.Last_name,
+            "permalink": u.Permalink,
+            "username": u.Username,
+        },
+    }
+
+    return json.Marshal(j)
 }

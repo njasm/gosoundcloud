@@ -38,7 +38,7 @@ func validateNotEmptyString(m []map[string]string) error {
 	return nil
 }
 
-func NewSoundcloudApi(c string, cs string, callback string) (*SoundcloudApi, error) {
+func NewSoundcloudApi(c string, cs string, callback *string) (*SoundcloudApi, error) {
 	v := []map[string]string{
 		{c: "Client Id cannot be Blank"},
 		{cs: "Client Secret cannot be Blank"},
@@ -46,10 +46,14 @@ func NewSoundcloudApi(c string, cs string, callback string) (*SoundcloudApi, err
 	if err := validateNotEmptyString(v); err != nil {
 		return nil, err
 	}
+    if callback == nil {
+        empty := ""
+        callback = &empty
+    }
 	conf := &oauth2.Config{
 		ClientID:     c,        //"CLIENT ID",
 		ClientSecret: cs,       //"CLIENT SECRET",
-		RedirectURL:  callback, //"YOUR_REDIRECT_URL",
+		RedirectURL:  *callback, //"YOUR_REDIRECT_URL",
 		Scopes:       []string{"non-expiring"},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  AuthURL,
@@ -206,14 +210,14 @@ func (s *SoundcloudApi) GetLastResponse() (*http.Response) {
     return s.response
 }
 
-func SaveResource(s *SoundcloudApi, r Saver) error {
+func (s *SoundcloudApi) SaveResource(r Saver) error {
     return r.Save(s)
 }
 
-func UpdateResource(s *SoundcloudApi, r Updater) error {
+func (s *SoundcloudApi) UpdateResource(r Updater) error {
     return r.Update(s)
 }
 
-func DeleteResource(s *SoundcloudApi, r Deleter) error {
+func (s *SoundcloudApi) DeleteResource(r Deleter) error {
     return r.Delete(s)
 }
