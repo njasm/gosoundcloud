@@ -1,4 +1,4 @@
-package gosound
+package gosoundcloud
 
 type Saver interface {
 	Save(s *SoundcloudApi) error
