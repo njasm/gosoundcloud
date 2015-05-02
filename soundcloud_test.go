@@ -1,4 +1,4 @@
-package gosound
+package gosoundcloud
 
 import (
 	"bufio"

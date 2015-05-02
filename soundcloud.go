@@ -1,4 +1,4 @@
-package gosound
+package gosoundcloud
 
 import (
 	"bytes"
@@ -79,11 +79,12 @@ func (s *SoundcloudApi) PasswordCredentialsToken(u string, p string) (bool, erro
 
 // make a get request, p map are the url params
 func (s *SoundcloudApi) Get(url string, p UrlParams) (*http.Response, error) {
-	if p.Values != nil {
+	if len(p.Values) > 0 {
 		url = buildUrlWithParams(url, p)
 	} else {
 		url = buildUrl(url)
 	}
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -147,8 +148,7 @@ func (s *SoundcloudApi) Delete(url string) (*http.Response, error) {
 func (s *SoundcloudApi) Resolve(searchUrl string) (*http.Response, error) {
 	p := NewUrlParams()
 	p.Set("url", searchUrl)
-	url := "/resolve"
-	url = buildUrlWithParams(url, p)
+	url := buildUrlWithParams("/resolve", p)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -200,4 +200,20 @@ func (s *SoundcloudApi) do(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 	return s.response, nil
+}
+
+func (s *SoundcloudApi) GetLastResponse() (*http.Response) {
+    return s.response
+}
+
+func SaveResource(s *SoundcloudApi, r Saver) error {
+    return r.Save(s)
+}
+
+func UpdateResource(s *SoundcloudApi, r Updater) error {
+    return r.Update(s)
+}
+
+func DeleteResource(s *SoundcloudApi, r Deleter) error {
+    return r.Delete(s)
 }
