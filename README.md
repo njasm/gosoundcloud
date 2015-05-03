@@ -16,7 +16,7 @@ Still missing complete map of soundcloud resources to structs, helper functions,
 * User Authorization/Authentication
 * Media File Download/Upload
 
-#### Naive Low-level Example
+#### Naive Example
 
 ```go
 package main
@@ -25,26 +25,38 @@ import (
     "github.com/njasm/gosoundcloud"
     "fmt"
     "io/ioutil"
+    "os"
 )
 
 func main() {
     //  callback url is optional - nil in example
     s, err := gosoundcloud.NewSoundcloudApi("client_id", "client_secret", nil)
-    err = s.PasswordCredentialsToken("your_email@something.com", "your_password")
     if err != nil {
         fmt.Println(err)
+        os.Exit(1)
     }
-    getParams := gosoundcloud.NewUrlParams()
-    getParams.Set("q", "HybridSpecies")
-    r, err := s.Get("/tracks", getParams)
+    // request password credentials token - what soundcloud calls user credentials authentication
+    if err = s.PasswordCredentialsToken("your_email@something.com", "your_password"); err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    // get group id 3 data
+    var g_id uint64 = 3
+    group, err := s.GetGroup(g_id)
+    if err != {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    // get group members, that have "great" in they username, description, etc
+    params := gosoundcloud.NewUrlParams()
+    params.Set("q", "great");
+    members, err := s.GetGroupMembers(group, params)
     if err != nil {
         fmt.Println(err)
+        os.Exit(1)
     }
-    defer r.Body.Close()
-    data, err = ioutil.ReadAll(r.Body)
-    if err != nil {
-        fmt.Println(err)
+    for member := range members {
+        fmt.Println(member.Username)
     }
-    fmt.Println(string(data))
 }
 ```
