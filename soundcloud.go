@@ -168,6 +168,9 @@ func buildUrlWithParams(url string, p UrlParams) string {
 }
 
 func buildUrl(url string) string {
+    if len(url) >= 4 && url[:4] == "http" {
+        return url
+    }
 	url = cleanUrlPrefix(url)
 	url = prefixBaseUrlApi(url)
 	return url

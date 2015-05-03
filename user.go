@@ -3,7 +3,6 @@ package gosoundcloud
 import (
     "errors"
     "encoding/json"
-    "strconv"
 )
 
 type User struct {
@@ -64,9 +63,10 @@ func (u *User) Update(s *SoundcloudApi) error {
     if u.IsNew() {
         return errors.New("User is new, cannot be updated!")
     }
-
-    url := "/users/" + strconv.FormatUint(u.Id, 10)
-    _, err := s.Put(url, u)
+    if u.Uri == "" {
+        return errors.New("Empty Uri, cannot be updated!")
+    }
+    _, err := s.Put(u.Uri, u)
     return err
 }
 
