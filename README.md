@@ -22,41 +22,33 @@ Still missing complete map of soundcloud resources to structs, helper functions,
 package main
 
 import (
-    "github.com/njasm/gosoundcloud"
     "fmt"
-    "io/ioutil"
     "os"
+    
+    "github.com/njasm/gosoundcloud"
 )
 
 func main() {
     //  callback url is optional - nil in example
-    s, err := gosoundcloud.NewSoundcloudApi("client_id", "client_secret", nil)
-    if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
+    s, _ := gosoundcloud.NewSoundcloudApi("client_id", "client_secret", nil)
+
     // request password credentials token - what soundcloud calls user credentials authentication
     if err = s.PasswordCredentialsToken("your_email@something.com", "your_password"); err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
+    
     // get group id 3 data
-    var g_id uint64 = 3
-    group, err := s.GetGroup(g_id)
-    if err != {
-        fmt.Println(err)
-        os.Exit(1)
-    }
+    var group_id uint64 = 3
+    group, _ := s.GetGroup(group_id)
+    fmt.Println(group.Description)
+    
     // get group members, that have "great" in they username, description, etc
     params := gosoundcloud.NewUrlParams()
     params.Set("q", "great");
-    members, err := s.GetGroupMembers(group, params)
-    // or get all members
-    members, err := s.GetGroupMembers(group, nil)
-    if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
+    members, _ := s.GetGroupMembers(group, params)
+    //members, _ := s.GetGroupMembers(group, nil) // or get all members
+
     for member := range members {
         fmt.Println(member.Username)
     }
