@@ -7,6 +7,9 @@ import (
 	"golang.org/x/oauth2"
 	"net/http"
 	"net/url"
+    "io/ioutil"
+    "errors"
+    "strconv"
 )
 
 var BaseApiURL = "https://api.soundcloud.com"
@@ -79,7 +82,7 @@ func (s *SoundcloudApi) PasswordCredentialsToken(u string, p string) error {
 	return err
 }
 
-// make a get request, p map are the url params
+// Get Makes a get request to the specified url resource, p is adicional url params
 func (s *SoundcloudApi) Get(url string, p UrlParams) (*http.Response, error) {
 	if len(p.Values) > 0 {
 		url = buildUrlWithParams(url, p)
@@ -95,7 +98,7 @@ func (s *SoundcloudApi) Get(url string, p UrlParams) (*http.Response, error) {
 	return s.do(req)
 }
 
-// make a post request, data interface will be encoded into json
+// Post Makes a post request to the speciefied url resource, data interface will be encoded into json
 func (s *SoundcloudApi) Post(url string, data interface{}) (*http.Response, error) {
 	url = buildUrl(url)
 	body, err := json.Marshal(data)
@@ -115,7 +118,7 @@ func (s *SoundcloudApi) Post(url string, data interface{}) (*http.Response, erro
 	return s.do(req)
 }
 
-// make a put request, data interface will be encoded into json
+// Put Makes a put request to the specified url resource, data interface will be encoded into json
 func (s *SoundcloudApi) Put(url string, data interface{}) (*http.Response, error) {
 	url = buildUrl(url)
 	body, err := json.Marshal(data)
@@ -135,7 +138,7 @@ func (s *SoundcloudApi) Put(url string, data interface{}) (*http.Response, error
 	return s.do(req)
 }
 
-// make a delete request
+// Delete Makes a delete request to the specified url resource
 func (s *SoundcloudApi) Delete(url string) (*http.Response, error) {
 	url = buildUrl(url)
 	req, err := http.NewRequest("DELETE", url, nil)
@@ -146,7 +149,7 @@ func (s *SoundcloudApi) Delete(url string) (*http.Response, error) {
 	return s.do(req)
 }
 
-// resolves a soundcloud url and redirects automatically if found
+// Resolve Resolves a soundcloud url and redirects automatically if found
 func (s *SoundcloudApi) Resolve(searchUrl string) (*http.Response, error) {
 	p := NewUrlParams()
 	p.Set("url", searchUrl)
@@ -159,53 +162,31 @@ func (s *SoundcloudApi) Resolve(searchUrl string) (*http.Response, error) {
 	return s.do(req)
 }
 
-func buildUrlWithParams(url string, p UrlParams) string {
-	url = buildUrl(url)
-	if len(p.Values) > 0 {
-		url = url + "?" + p.Values.Encode()
-	}
-	return url
-}
-
-func buildUrl(url string) string {
-    if len(url) >= 4 && url[:4] == "http" {
-        return url
+// GetMe Requests the User resource of the authenticated user
+func (s *SoundcloudApi) GetMe() (*User, error) {
+    url := buildUrl("/me")
+    resp, err := s.Get(url, NewUrlParams())
+    if err != nil {
+        return nil, err
     }
-	url = cleanUrlPrefix(url)
-	url = prefixBaseUrlApi(url)
-	return url
+    s.response = resp
+    data, err := ioutil.ReadAll(resp.Body)
+    defer s.response.Body.Close()
+    if err != nil {
+        return nil, err
+    }
+    if resp.StatusCode == 200 {
+        u := NewUser()
+        err = json.Unmarshal(data, u)
+        if err != nil {
+            return nil, err
+        }
+        return u, nil
+    }
+
+    return nil, errors.New(string(data))
 }
 
-// adds a slash prefix if non-existent
-func cleanUrlPrefix(url string) string {
-	if url[:1] != "/" {
-		url = "/" + url
-	}
-	return url
-}
-
-// prefix the soundcloud baseUrlApi
-func prefixBaseUrlApi(url string) string {
-	return BaseApiURL + url
-}
-
-// work-around for Soundcloud OAuth2 implementation,
-// header must be OAuth instead of bearer
-func defaultTokenType(t *oauth2.Token) {
-	if t.TokenType == "" {
-		t.TokenType = "OAuth"
-	}
-}
-
-// send http request
-func (s *SoundcloudApi) do(req *http.Request) (*http.Response, error) {
-	var err error
-	s.response, err = s.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	return s.response, nil
-}
 
 func (s *SoundcloudApi) GetLastResponse() (*http.Response) {
     return s.response
@@ -222,3 +203,115 @@ func (s *SoundcloudApi) UpdateResource(r Updater) error {
 func (s *SoundcloudApi) DeleteResource(r Deleter) error {
     return r.Delete(s)
 }
+
+func buildUrlWithParams(url string, p UrlParams) string {
+    url = buildUrl(url)
+    if len(p.Values) > 0 {
+        url = url + "?" + p.Values.Encode()
+    }
+    return url
+}
+
+func buildUrl(url string) string {
+    if len(url) >= 4 && url[:4] == "http" {
+        return url
+    }
+    url = cleanUrlPrefix(url)
+    url = prefixBaseUrlApi(url)
+    return url
+}
+
+// adds a slash prefix if non-existent
+func cleanUrlPrefix(url string) string {
+    if url[:1] != "/" {
+        url = "/" + url
+    }
+    return url
+}
+
+// prefix the soundcloud baseUrlApi
+func prefixBaseUrlApi(url string) string {
+    return BaseApiURL + url
+}
+
+// work-around for Soundcloud OAuth2 implementation,
+// header must be OAuth instead of bearer
+func defaultTokenType(t *oauth2.Token) {
+    if t.TokenType == "" {
+        t.TokenType = "OAuth"
+    }
+}
+
+// send http request
+func (s *SoundcloudApi) do(req *http.Request) (*http.Response, error) {
+    var err error
+    s.response, err = s.httpClient.Do(req)
+    if err != nil {
+        return nil, err
+    }
+    return s.response, nil
+}
+
+/*****************
+* GROUPS Methods *
+******************/
+
+func (s *SoundcloudApi) GetGroups(p UrlParams) ([]*Group, error){
+    return getGroups(s, p)
+}
+
+func (s *SoundcloudApi) GetGroup(id uint64) (*Group, error) {
+    url := "/groups/" + strconv.FormatUint(id, 10)
+    resp, err := s.Get(url, NewUrlParams())
+    defer resp.Body.Close()
+    if err != nil {
+        return nil, err
+    }
+    data, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        return nil, err
+    }
+    g := NewGroup()
+    if err = json.Unmarshal(data, g); err != nil {
+        return nil, err
+    }
+    return g, nil
+}
+
+func (s *SoundcloudApi) GetGroupModerators(g *Group, p UrlParams) ([]*User, error) {
+    return g.getModerators(s, p)
+}
+
+func (s *SoundcloudApi) GetGroupMembers(g *Group, p UrlParams) ([]*User, error) {
+    return g.getMembers(s, p)
+}
+
+func (s *SoundcloudApi) GetGroupContributors(g *Group, p UrlParams) ([]*User, error) {
+    return g.getContributors(s, p)
+}
+
+func (s *SoundcloudApi) GetGroupUsers(g *Group, p UrlParams) ([]*User, error) {
+    return g.getUsers(s, p)
+}
+
+func (s *SoundcloudApi) GetGroupTracks(g *Group, p UrlParams) ([]*Track, error) {
+    return g.getTracks(s, p)
+}
+
+func (s *SoundcloudApi) GetGroupPendingTracks(g *Group, p UrlParams) ([]*Track, error) {
+    return g.getPendingTracks(s, p)
+}
+
+// should be redundant with GetTrack unless the track resouce have adicional data here - to confirm
+//func (s *SoundcloudApi) GetGroupPendingTrack(g *Group, id uint64) (*Track, error) {
+//    return g.GetPendingTrack(s, uint64())
+//}
+
+func (s *SoundcloudApi) GetGroupContributions(g *Group, p UrlParams) ([]*Track, error) {
+    return g.getContributions(s, p)
+}
+
+// should be redundant with GetTrack unless the track resouce have adicional data here - to confir
+//func (s *SoundcloudApi) GetGroupContributionsTrack(g *Group) ([]*Track, error) {
+//    return g.GetContributionsTrack(s)
+//}
