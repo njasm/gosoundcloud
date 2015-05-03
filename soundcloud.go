@@ -27,21 +27,19 @@ type SoundcloudApi struct {
 	response   *http.Response
 }
 
-func validateNotEmptyString(m []map[string]string) error {
-	for _, mp := range m {
-		for field, message := range mp {
-			if field == "" {
-				return fmt.Errorf(message)
-			}
-		}
-	}
+func validateNotEmptyString(m map[string]string) error {
+    for field, message := range m {
+        if field == "" {
+            return fmt.Errorf(message)
+        }
+    }
 	return nil
 }
 
 func NewSoundcloudApi(c string, cs string, callback *string) (*SoundcloudApi, error) {
-	v := []map[string]string{
-		{c: "Client Id cannot be Blank"},
-		{cs: "Client Secret cannot be Blank"},
+	v := map[string]string{
+		c: "Client Id cannot be Blank",
+		cs: "Client Secret cannot be Blank",
 	}
 	if err := validateNotEmptyString(v); err != nil {
 		return nil, err
@@ -64,21 +62,21 @@ func NewSoundcloudApi(c string, cs string, callback *string) (*SoundcloudApi, er
 }
 
 // user credentials authorization
-func (s *SoundcloudApi) PasswordCredentialsToken(u string, p string) (bool, error) {
-	v := []map[string]string{
-		{u: "Username/Email cannot be Blank"},
-		{p: "Password cannot be Blank"},
+func (s *SoundcloudApi) PasswordCredentialsToken(u string, p string) error {
+	v := map[string]string{
+		u: "Username/Email cannot be Blank",
+		p: "Password cannot be Blank",
 	}
 	if err := validateNotEmptyString(v); err != nil {
-		return false, err
+		return err
 	}
 	tok, err := s.conf.PasswordCredentialsToken(oauth2.NoContext, u, p)
 	if err != nil {
-		return false, err
+		return err
 	}
 	defaultTokenType(tok)
 	s.httpClient = s.conf.Client(oauth2.NoContext, tok)
-	return true, nil
+	return err
 }
 
 // make a get request, p map are the url params

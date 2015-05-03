@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/njasm/gosound.svg?branch=master)](https://travis-ci.org/njasm/gosound) 
-[![Coverage Status](https://coveralls.io/repos/njasm/gosound/badge.svg?branch=master)](https://coveralls.io/r/njasm/gosound?branch=master)
+[![Build Status](https://travis-ci.org/njasm/gosoundcloud.svg?branch=master)](https://travis-ci.org/njasm/gosoundcloud) 
+[![Coverage Status](https://coveralls.io/repos/njasm/gosoundcloud/badge.svg?branch=master)](https://coveralls.io/r/njasm/gosoundcloud?branch=master)
 
 ## Soundcloud.com API for GO
 
@@ -16,25 +16,31 @@ Still missing complete map of soundcloud resources to structs, helper functions,
 * User Authorization/Authentication
 * Media File Download/Upload
 
-#### Naive Example
+#### Naive Low-level Example
 
 ```go
-// empty string is callback url (optional)
-s, err := NewSoundcloudApi("client_id", "client_secret", "")
-_, err = s.PasswordCredentialsToken("your_email@something.com", "your_password")
-if err != nil {
-    fmt.Println(err)
+package main
+
+import "github.com/njasm/gosoundcloud"
+
+func main() {
+    //  callback url is optional - nil in example
+    s, err := NewSoundcloudApi("client_id", "client_secret", nil)
+    err = s.PasswordCredentialsToken("your_email@something.com", "your_password")
+    if err != nil {
+        fmt.Println(err)
+    }
+    getParams := gosoundcloud.NewUrlParams()
+    getParams.Set("q", "HybridSpecies")
+    r, err := s.Get("/tracks", getParams)
+    if err != nil {
+        fmt.Println(err)
+    }
+    defer r.Body.Close()
+    data, err = ioutil.ReadAll(r.Body)
+    if err != nil {
+        fmt.Println(err)
+    }
+    fmt.Println(string(data))
 }
-getParams := NewUrlParams()
-getParams.Set("q", "HybridSpecies")
-r, err := s.Get("/tracks", getParams)
-if err != nil {
-    fmt.Println(err)
-}
-data, err = ioutil.ReadAll(r.Body)
-r.Body.Close()
-if err != nil {
-    fmt.Println(err)
-}
-fmt.Println(string(data))
 ```
