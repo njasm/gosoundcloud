@@ -21,11 +21,15 @@ Still missing complete map of soundcloud resources to structs, helper functions,
 ```go
 package main
 
-import "github.com/njasm/gosoundcloud"
+import (
+    "github.com/njasm/gosoundcloud"
+    "fmt"
+    "io/ioutil"
+)
 
 func main() {
     //  callback url is optional - nil in example
-    s, err := NewSoundcloudApi("client_id", "client_secret", nil)
+    s, err := gosoundcloud.NewSoundcloudApi("client_id", "client_secret", nil)
     err = s.PasswordCredentialsToken("your_email@something.com", "your_password")
     if err != nil {
         fmt.Println(err)
