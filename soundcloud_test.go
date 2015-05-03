@@ -116,7 +116,7 @@ func getMockedSoundcloudApi() *SoundcloudApi {
 
 func TestNewSoundcloudApi(t *testing.T) {
 	s := getMockedSoundcloudApi()
-	_, err := s.PasswordCredentialsToken(username, passwd)
+	err := s.PasswordCredentialsToken(username, passwd)
 	if err != nil {
 		t.Error(err)
 	}
@@ -124,7 +124,7 @@ func TestNewSoundcloudApi(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	s := getMockedSoundcloudApi()
-	_, err := s.PasswordCredentialsToken(username, passwd)
+	err := s.PasswordCredentialsToken(username, passwd)
 	if err != nil {
 		t.Error(err)
 	}
@@ -138,7 +138,7 @@ func TestGet(t *testing.T) {
 
 func TestPost(t *testing.T) {
 	s := getMockedSoundcloudApi()
-	_, err := s.PasswordCredentialsToken(username, passwd)
+	err := s.PasswordCredentialsToken(username, passwd)
 	if err != nil {
 		t.Error(err)
 	}
@@ -158,7 +158,7 @@ func TestPost(t *testing.T) {
 
 func TestPut(t *testing.T) {
 	s := getMockedSoundcloudApi()
-	_, err := s.PasswordCredentialsToken(username, passwd)
+	err := s.PasswordCredentialsToken(username, passwd)
 	if err != nil {
 		t.Error(err)
 	}
@@ -181,7 +181,7 @@ func TestPut(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	s := getMockedSoundcloudApi()
-	_, err := s.PasswordCredentialsToken(username, passwd)
+	err := s.PasswordCredentialsToken(username, passwd)
 	if err != nil {
 		t.Error(err)
 	}
@@ -196,7 +196,7 @@ func TestDelete(t *testing.T) {
 
 func TestResolve(t *testing.T) {
 	s := getMockedSoundcloudApi()
-	_, err := s.PasswordCredentialsToken(username, passwd)
+	err := s.PasswordCredentialsToken(username, passwd)
 	if err != nil {
 		t.Error(err)
 	}
