@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/oauth2"
 	"net/http"
 	"net/url"
     "io/ioutil"
-    "errors"
     "strconv"
+
+    "golang.org/x/oauth2"
 )
 
 var BaseApiURL = "https://api.soundcloud.com"
@@ -20,8 +20,8 @@ type UrlParams struct {
 	url.Values
 }
 
-func NewUrlParams() UrlParams {
-	return UrlParams{url.Values{}}
+func NewUrlParams() *UrlParams {
+	return &UrlParams{url.Values{}}
 }
 
 type SoundcloudApi struct {
@@ -83,13 +83,8 @@ func (s *SoundcloudApi) PasswordCredentialsToken(u string, p string) error {
 }
 
 // Get Makes a get request to the specified url resource, p is adicional url params
-func (s *SoundcloudApi) Get(url string, p UrlParams) (*http.Response, error) {
-	if len(p.Values) > 0 {
-		url = buildUrlWithParams(url, p)
-	} else {
-		url = buildUrl(url)
-	}
-
+func (s *SoundcloudApi) Get(url string, p *UrlParams) (*http.Response, error) {
+	url = buildUrlWithParams(url, p)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -164,27 +159,16 @@ func (s *SoundcloudApi) Resolve(searchUrl string) (*http.Response, error) {
 
 // GetMe Requests the User resource of the authenticated user
 func (s *SoundcloudApi) GetMe() (*User, error) {
-    url := buildUrl("/me")
-    resp, err := s.Get(url, NewUrlParams())
+    resp, err := s.Get("/me", nil)
     if err != nil {
         return nil, err
-    }
-    s.response = resp
-    data, err := ioutil.ReadAll(resp.Body)
-    defer s.response.Body.Close()
-    if err != nil {
-        return nil, err
-    }
-    if resp.StatusCode == 200 {
-        u := NewUser()
-        err = json.Unmarshal(data, u)
-        if err != nil {
-            return nil, err
-        }
-        return u, nil
     }
 
-    return nil, errors.New(string(data))
+    u := NewUser()
+    if err = processAndUnmarshalResponses(resp, err, u); err != nil {
+        return nil, err
+    }
+    return u, nil
 }
 
 
@@ -204,9 +188,9 @@ func (s *SoundcloudApi) DeleteResource(r Deleter) error {
     return r.Delete(s)
 }
 
-func buildUrlWithParams(url string, p UrlParams) string {
+func buildUrlWithParams(url string, p *UrlParams) string {
     url = buildUrl(url)
-    if len(p.Values) > 0 {
+    if p != nil && len(p.Values) > 0 {
         url = url + "?" + p.Values.Encode()
     }
     return url
@@ -252,11 +236,34 @@ func (s *SoundcloudApi) do(req *http.Request) (*http.Response, error) {
     return s.response, nil
 }
 
+func processAndUnmarshalResponses(resp *http.Response, err error, slice interface{}) (error) {
+    if err != nil {
+        return err
+    }
+    data, err := ioutil.ReadAll(resp.Body)
+    defer resp.Body.Close()
+    if err != nil {
+        return err
+    }
+    if err = json.Unmarshal(data, slice); err != nil {
+        return err
+    }
+    return err
+}
+
+/*******************
+* COMMENTS Methods *
+*******************/
+
+func (s *SoundcloudApi) GetComments(p *UrlParams) ([]*Comment, error){
+    return getComments(s, p)
+}
+
 /*****************
 * GROUPS Methods *
 ******************/
 
-func (s *SoundcloudApi) GetGroups(p UrlParams) ([]*Group, error){
+func (s *SoundcloudApi) GetGroups(p *UrlParams) ([]*Group, error){
     return getGroups(s, p)
 }
 
@@ -278,40 +285,40 @@ func (s *SoundcloudApi) GetGroup(id uint64) (*Group, error) {
     return g, nil
 }
 
-func (s *SoundcloudApi) GetGroupModerators(g *Group, p UrlParams) ([]*User, error) {
+func (s *SoundcloudApi) GetGroupModerators(g *Group, p *UrlParams) ([]*User, error) {
     return g.getModerators(s, p)
 }
 
-func (s *SoundcloudApi) GetGroupMembers(g *Group, p UrlParams) ([]*User, error) {
+func (s *SoundcloudApi) GetGroupMembers(g *Group, p *UrlParams) ([]*User, error) {
     return g.getMembers(s, p)
 }
 
-func (s *SoundcloudApi) GetGroupContributors(g *Group, p UrlParams) ([]*User, error) {
+func (s *SoundcloudApi) GetGroupContributors(g *Group, p *UrlParams) ([]*User, error) {
     return g.getContributors(s, p)
 }
 
-func (s *SoundcloudApi) GetGroupUsers(g *Group, p UrlParams) ([]*User, error) {
+func (s *SoundcloudApi) GetGroupUsers(g *Group, p *UrlParams) ([]*User, error) {
     return g.getUsers(s, p)
 }
 
-func (s *SoundcloudApi) GetGroupTracks(g *Group, p UrlParams) ([]*Track, error) {
+func (s *SoundcloudApi) GetGroupTracks(g *Group, p *UrlParams) ([]*Track, error) {
     return g.getTracks(s, p)
 }
 
-func (s *SoundcloudApi) GetGroupPendingTracks(g *Group, p UrlParams) ([]*Track, error) {
+func (s *SoundcloudApi) GetGroupPendingTracks(g *Group, p *UrlParams) ([]*Track, error) {
     return g.getPendingTracks(s, p)
 }
 
-// should be redundant with GetTrack unless the track resouce have adicional data here - to confirm
+// should be redundant with GetTrack unless the track resource have added data here - to confirm
 //func (s *SoundcloudApi) GetGroupPendingTrack(g *Group, id uint64) (*Track, error) {
 //    return g.GetPendingTrack(s, uint64())
 //}
 
-func (s *SoundcloudApi) GetGroupContributions(g *Group, p UrlParams) ([]*Track, error) {
+func (s *SoundcloudApi) GetGroupContributions(g *Group, p *UrlParams) ([]*Track, error) {
     return g.getContributions(s, p)
 }
 
-// should be redundant with GetTrack unless the track resouce have adicional data here - to confir
+// should be redundant with GetTrack unless the track resource have added data here - to confir
 //func (s *SoundcloudApi) GetGroupContributionsTrack(g *Group) ([]*Track, error) {
 //    return g.GetContributionsTrack(s)
 //}

@@ -51,6 +51,8 @@ func main() {
     params := gosoundcloud.NewUrlParams()
     params.Set("q", "great");
     members, err := s.GetGroupMembers(group, params)
+    // or get all members
+    members, err := s.GetGroupMembers(group, nil)
     if err != nil {
         fmt.Println(err)
         os.Exit(1)

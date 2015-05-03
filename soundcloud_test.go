@@ -129,7 +129,7 @@ func TestGet(t *testing.T) {
 		t.Error(err)
 	}
 
-	r, err := s.Get("/me", UrlParams{})
+	r, err := s.Get("/me", nil)
 	if err != nil {
 		t.Error(err)
 	}

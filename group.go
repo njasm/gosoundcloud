@@ -4,8 +4,6 @@ import (
     "errors"
     "strconv"
     "encoding/json"
-    "io/ioutil"
-    "net/http"
 )
 
 // For what I understand you cannot create nor delete a group via api. - to confirm
@@ -69,71 +67,71 @@ func (g *Group) Delete(s *SoundcloudApi) error {
     return err
 }
 
-func getGroups(s *SoundcloudApi, p UrlParams) ([]*Group, error) {
+func getGroups(s *SoundcloudApi, p *UrlParams) ([]*Group, error) {
     url := "/groups"
     resp, err := s.Get(url, p)
     var slice []*Group
-    if err = processGroupResponses(resp, err, &slice); err != nil {
+    if err = processAndUnmarshalResponses(resp, err, &slice); err != nil {
         return nil, err
     }
     return slice, err
 }
 
-func (g *Group) getModerators(s *SoundcloudApi, p UrlParams) ([]*User, error) {
+func (g *Group) getModerators(s *SoundcloudApi, p *UrlParams) ([]*User, error) {
     url := g.Uri + "/moderators"
     resp, err := s.Get(url, p)
     var slice []*User
-    if err = processGroupResponses(resp, err, &slice); err != nil {
+    if err = processAndUnmarshalResponses(resp, err, &slice); err != nil {
         return nil, err
     }
     return slice, err
 }
 
-func (g *Group) getMembers(s *SoundcloudApi, p UrlParams) ([]*User, error) {
+func (g *Group) getMembers(s *SoundcloudApi, p *UrlParams) ([]*User, error) {
     url := g.Uri + "/members"
     resp, err := s.Get(url, p)
     var slice []*User
-    if err = processGroupResponses(resp, err, &slice); err != nil {
+    if err = processAndUnmarshalResponses(resp, err, &slice); err != nil {
         return nil, err
     }
     return slice, err
 }
 
-func (g *Group) getContributors(s *SoundcloudApi, p UrlParams) ([]*User, error) {
+func (g *Group) getContributors(s *SoundcloudApi, p *UrlParams) ([]*User, error) {
     url := g.Uri + "/contributors"
     resp, err := s.Get(url, p)
     var slice []*User
-    if err = processGroupResponses(resp, err, &slice); err != nil {
+    if err = processAndUnmarshalResponses(resp, err, &slice); err != nil {
         return nil, err
     }
     return slice, err
 }
 
-func (g *Group) getUsers(s *SoundcloudApi, p UrlParams) ([]*User, error) {
+func (g *Group) getUsers(s *SoundcloudApi, p *UrlParams) ([]*User, error) {
     url := g.Uri + "/users"
     resp, err := s.Get(url, p)
     var slice []*User
-    if err = processGroupResponses(resp, err, &slice); err != nil {
+    if err = processAndUnmarshalResponses(resp, err, &slice); err != nil {
         return nil, err
     }
     return slice, err
 }
 
-func (g *Group) getTracks(s *SoundcloudApi, p UrlParams) ([]*Track, error) {
+func (g *Group) getTracks(s *SoundcloudApi, p *UrlParams) ([]*Track, error) {
     url := g.Uri + "/tracks"
     resp, err := s.Get(url, p)
     var slice []*Track
-    if err = processGroupResponses(resp, err, &slice); err != nil {
+    if err = processAndUnmarshalResponses(resp, err, &slice); err != nil {
         return nil, err
     }
     return slice, err
 }
 
-func (g *Group) getPendingTracks(s *SoundcloudApi, p UrlParams) ([]*Track, error) {
+func (g *Group) getPendingTracks(s *SoundcloudApi, p *UrlParams) ([]*Track, error) {
     url := g.Uri + "/pending_tracks"
     resp, err := s.Get(url, p)
     var slice []*Track
-    if err = processGroupResponses(resp, err, &slice); err != nil {
+    if err = processAndUnmarshalResponses(resp, err, &slice); err != nil {
         return nil, err
     }
     return slice, err
@@ -143,11 +141,11 @@ func (g *Group) getPendingTracks(s *SoundcloudApi, p UrlParams) ([]*Track, error
 //func (s *SoundcloudApi) GetGroupPendingTrack(g *Group, id uint64) (*Track, error) {
 //}
 
-func (g *Group) getContributions(s *SoundcloudApi, p UrlParams) ([]*Track, error) {
+func (g *Group) getContributions(s *SoundcloudApi, p *UrlParams) ([]*Track, error) {
     url := g.Uri + "/contributions"
     resp, err := s.Get(url, p)
     var slice []*Track
-    if err = processGroupResponses(resp, err, &slice); err != nil {
+    if err = processAndUnmarshalResponses(resp, err, &slice); err != nil {
         return nil, err
     }
     return slice, err
@@ -167,19 +165,4 @@ func (g Group) MarshalJSON() ([]byte, error) {
         },
     }
     return json.Marshal(j)
-}
-
-func processGroupResponses(resp *http.Response, err error, slice interface{}) (error) {
-    if err != nil {
-        return err
-    }
-    data, err := ioutil.ReadAll(resp.Body)
-    defer resp.Body.Close()
-    if err != nil {
-        return err
-    }
-    if err = json.Unmarshal(data, slice); err != nil {
-        return err
-    }
-    return err
 }

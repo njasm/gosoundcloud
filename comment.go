@@ -117,6 +117,15 @@ func (c *Comment) Delete(s *SoundcloudApi) error {
     return err
 }
 
+func getComments(s *SoundcloudApi, p *UrlParams) ([]*Comment, error) {
+    resp, err := s.Get("/comments", p)
+    var slice []*Comment
+    if err = processAndUnmarshalResponses(resp, err, &slice); err != nil {
+        return nil, err
+    }
+    return slice, err
+}
+
 func (c Comment) MarshalJSON() ([]byte, error) {
     j := map[string]map[string]interface{}{
         "comment": {
