@@ -21,7 +21,18 @@ type Playlist struct {
     Description     string
     Genre           string
     Release         string
-
+    Purchase_title  *string
+    Label_name      string
+    Title           string
+    Release_year    *uint32
+    Release_month   *string
+    Release_day     *uint
+    License         string
+    Uri             string
+    Permalink_url   string
+    Artwork_url     string
+    User            *User
+    tracks          []*Track
 /*
 {
   "kind": "playlist",
@@ -379,4 +390,13 @@ type Playlist struct {
 
 func NewPlaylist() *Playlist {
     return &Playlist{Kind: "playlist"}
+}
+
+func getPlaylists(s *SoundcloudApi, p *UrlParams) ([]*Playlist, error) {
+    resp, err := s.Get("/playlists", p)
+    var slice []*Playlist
+    if err = processAndUnmarshalResponses(resp, err, slice); err != nil {
+        return nil, err
+    }
+    return slice, err
 }

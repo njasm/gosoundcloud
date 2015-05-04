@@ -249,6 +249,24 @@ func processAndUnmarshalResponses(resp *http.Response, err error, holder interfa
     return err
 }
 
+/********************
+* PLAYLISTS Methods *
+*********************/
+
+func (s *SoundcloudApi) GetPlaylist(id uint64) (*Playlist, error) {
+    url := "/playlists/" + strconv.FormatUint(id, 10)
+    resp, err := s.Get(url, nil)
+    p := NewPlaylist()
+    if err = processAndUnmarshalResponses(resp, err, p); err != nil {
+        return nil, err
+    }
+    return p, err
+}
+
+func (s *SoundcloudApi) GetPlaylists(p *UrlParams) ([]*Playlist, error) {
+    return getPlaylists(s, p)
+}
+
 /****************
 * USERS Methods *
 *****************/

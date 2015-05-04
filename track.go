@@ -1,3 +1,5 @@
 package gosoundcloud
 
-type Track struct {}
+type Track struct {
+    Created_with    *App
+}
