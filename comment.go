@@ -46,54 +46,6 @@ func (c Comment) IsNew() bool {
     return true
 }
 
-func (c Comment) GetUserId() uint64 {
-    return c.User_id
-}
-
-func (c Comment) GetTrackId() uint64 {
-    return c.Track_id
-}
-
-func (c *Comment) SetTrackId(id uint64) bool {
-    if !c.IsNew() {
-        return false
-    }
-    c.Track_id = id
-    return true
-}
-
-func (c *Comment) GetTimeStamp() uint64 {
-    return c.Timestamp
-}
-
-func (c *Comment) SetTimeStamp(t uint64) bool {
-    if !c.IsNew() {
-        return false
-    }
-    c.Timestamp = t
-    return true
-}
-
-func (c *Comment) GetCreatedAt() string {
-    return c.Created_at
-}
-
-func (c *Comment) GetBody() string {
-    return c.Body
-}
-
-func (c *Comment) SetBody(b string) bool {
-    if !c.IsNew() {
-        return false
-    }
-    c.Body = b
-    return true
-}
-
-func (c *Comment) GetUri() string {
-    return c.Uri
-}
-
 func (c *Comment) Save(s *SoundcloudApi) error {
     if !c.IsNew() {
         return errors.New("Comment is not new, cannot be saved!")

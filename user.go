@@ -70,6 +70,35 @@ func (u *User) Update(s *SoundcloudApi) error {
     return err
 }
 
+func getUsers(s *SoundcloudApi, p *UrlParams) ([]*User, error) {
+    resp, err := s.Get("/users", p)
+    var slice []*User
+    if err = processAndUnmarshalResponses(resp, err, slice); err != nil {
+        return nil, err
+    }
+    return slice, err
+}
+
+func (u *User) getTracks(s *SoundcloudApi, p *UrlParams) ([]*Track, error) {
+    url := u.Uri + "/tracks"
+    resp, err := s.Get(url, p)
+    var slice []*Track
+    if err = processAndUnmarshalResponses(resp, err, slice); err != nil {
+        return nil, err
+    }
+    return slice, err
+}
+
+func (u *User) getPlaylists(s *SoundcloudApi, p *UrlParams) ([]*Playlist, error) {
+    url := u.Uri + "/playlists"
+    resp, err := s.Get(url, p)
+    var slice []*Playlist
+    if err = processAndUnmarshalResponses(resp, err, slice); err != nil {
+        return nil, err
+    }
+    return slice, err
+}
+
 func (u User) MarshalJSON() ([]byte, error) {
     j := map[string]map[string]interface{}{
         "user": {

@@ -160,17 +160,12 @@ func (s *SoundcloudApi) Resolve(searchUrl string) (*http.Response, error) {
 // GetMe Requests the User resource of the authenticated user
 func (s *SoundcloudApi) GetMe() (*User, error) {
     resp, err := s.Get("/me", nil)
-    if err != nil {
-        return nil, err
-    }
-
     u := NewUser()
     if err = processAndUnmarshalResponses(resp, err, u); err != nil {
         return nil, err
     }
     return u, nil
 }
-
 
 func (s *SoundcloudApi) GetLastResponse() (*http.Response) {
     return s.response
@@ -205,7 +200,7 @@ func buildUrl(url string) string {
     return url
 }
 
-// adds a slash prefix if non-existent
+// cleanUrlPrefix adds a slash prefix if non-existent. only relative paths should call this function
 func cleanUrlPrefix(url string) string {
     if url[:1] != "/" {
         url = "/" + url
@@ -213,7 +208,7 @@ func cleanUrlPrefix(url string) string {
     return url
 }
 
-// prefix the soundcloud baseUrlApi
+// prefixBaseUrlApi prefixes the soundcloud's api base url
 func prefixBaseUrlApi(url string) string {
     return BaseApiURL + url
 }
@@ -236,26 +231,65 @@ func (s *SoundcloudApi) do(req *http.Request) (*http.Response, error) {
     return s.response, nil
 }
 
-func processAndUnmarshalResponses(resp *http.Response, err error, slice interface{}) (error) {
+func processAndUnmarshalResponses(resp *http.Response, err error, holder interface{}) (error) {
     if err != nil {
         return err
     }
+
+    //TODO: check if StatusCode is 40x/50x if so set the body as the error and return
+
     data, err := ioutil.ReadAll(resp.Body)
     defer resp.Body.Close()
     if err != nil {
         return err
     }
-    if err = json.Unmarshal(data, slice); err != nil {
+    if err = json.Unmarshal(data, holder); err != nil {
         return err
     }
     return err
+}
+
+/****************
+* USERS Methods *
+*****************/
+
+func (s *SoundcloudApi) GetUser(id uint64) (*User, error) {
+    url := "/users/" + strconv.FormatUint(id, 10)
+    resp, err := s.Get(url, nil)
+    u := NewUser()
+    if err = processAndUnmarshalResponses(resp, err, u); err != nil {
+        return nil, err
+    }
+    return u, err
+}
+
+func (s *SoundcloudApi) GetUsers(p *UrlParams) ([]*User, error) {
+    return getUsers(s, p)
+}
+
+func (s *SoundcloudApi) GetUserTracks(u *User, p *UrlParams) ([]*Track, error) {
+    return u.getTracks(s, p)
+}
+
+func (s *SoundcloudApi) GetUserPlaylists(u *User, p *UrlParams) ([]*Track, error) {
+    return u.getPlaylists(s, p)
 }
 
 /*******************
 * COMMENTS Methods *
 *******************/
 
-func (s *SoundcloudApi) GetComments(p *UrlParams) ([]*Comment, error){
+func (s *SoundcloudApi) GetComment(id uint64) (*Group, error) {
+    url := "/comments/" + strconv.FormatUint(id, 10)
+    resp, err := s.Get(url, nil)
+    c := NewComment()
+    if err = processAndUnmarshalResponses(resp, err, c); err != nil {
+        return nil, err
+    }
+    return c, err
+}
+
+func (s *SoundcloudApi) GetComments(p *UrlParams) ([]*Comment, error) {
     return getComments(s, p)
 }
 
@@ -263,26 +297,18 @@ func (s *SoundcloudApi) GetComments(p *UrlParams) ([]*Comment, error){
 * GROUPS Methods *
 ******************/
 
-func (s *SoundcloudApi) GetGroups(p *UrlParams) ([]*Group, error){
-    return getGroups(s, p)
-}
-
 func (s *SoundcloudApi) GetGroup(id uint64) (*Group, error) {
     url := "/groups/" + strconv.FormatUint(id, 10)
-    resp, err := s.Get(url, NewUrlParams())
-    defer resp.Body.Close()
-    if err != nil {
-        return nil, err
-    }
-    data, err := ioutil.ReadAll(resp.Body)
-    if err != nil {
-        return nil, err
-    }
+    resp, err := s.Get(url, nil)
     g := NewGroup()
-    if err = json.Unmarshal(data, g); err != nil {
+    if err = processAndUnmarshalResponses(resp, err, g); err != nil {
         return nil, err
     }
-    return g, nil
+    return g, err
+}
+
+func (s *SoundcloudApi) GetGroups(p *UrlParams) ([]*Group, error){
+    return getGroups(s, p)
 }
 
 func (s *SoundcloudApi) GetGroupModerators(g *Group, p *UrlParams) ([]*User, error) {
