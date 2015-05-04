@@ -271,7 +271,7 @@ func (s *SoundcloudApi) GetUserTracks(u *User, p *UrlParams) ([]*Track, error) {
     return u.getTracks(s, p)
 }
 
-func (s *SoundcloudApi) GetUserPlaylists(u *User, p *UrlParams) ([]*Track, error) {
+func (s *SoundcloudApi) GetUserPlaylists(u *User, p *UrlParams) ([]*Playlist, error) {
     return u.getPlaylists(s, p)
 }
 
@@ -279,7 +279,7 @@ func (s *SoundcloudApi) GetUserPlaylists(u *User, p *UrlParams) ([]*Track, error
 * COMMENTS Methods *
 *******************/
 
-func (s *SoundcloudApi) GetComment(id uint64) (*Group, error) {
+func (s *SoundcloudApi) GetComment(id uint64) (*Comment, error) {
     url := "/comments/" + strconv.FormatUint(id, 10)
     resp, err := s.Get(url, nil)
     c := NewComment()
