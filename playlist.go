@@ -400,3 +400,13 @@ func getPlaylists(s *SoundcloudApi, p *UrlParams) ([]*Playlist, error) {
     }
     return slice, err
 }
+
+// TODO: Get playlist secret-token
+//func (pl *Playlist) getSecretToken(s *SoundcloudApi,) ([]*Playlist, error) {
+//    resp, err := s.Get("/playlists", p)
+//    var slice []*Playlist
+//    if err = processAndUnmarshalResponses(resp, err, slice); err != nil {
+//        return nil, err
+//    }
+//    return slice, err
+//}

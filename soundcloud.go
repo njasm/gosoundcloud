@@ -289,8 +289,32 @@ func (s *SoundcloudApi) GetUserTracks(u *User, p *UrlParams) ([]*Track, error) {
     return u.getTracks(s, p)
 }
 
+func (s *SoundcloudApi) GetUserFollowings(u *User, p *UrlParams) ([]*User, error) {
+    return u.getFollowings(s, p)
+}
+
+func (s *SoundcloudApi) GetUserFollowers(u *User, p *UrlParams) ([]*User, error) {
+    return u.getFollowers(s, p)
+}
+
+func (s *SoundcloudApi) GetUserComments(u *User, p *UrlParams) ([]*Comment, error) {
+    return u.getComments(s, p)
+}
+
+func (s *SoundcloudApi) GetUserFavorites(u *User, p *UrlParams) ([]*Track, error) {
+    return u.getFavorites(s, p)
+}
+
 func (s *SoundcloudApi) GetUserPlaylists(u *User, p *UrlParams) ([]*Playlist, error) {
     return u.getPlaylists(s, p)
+}
+
+func (s *SoundcloudApi) GetUserGroups(u *User, p *UrlParams) ([]*Group, error) {
+    return u.getGroups(s, p)
+}
+
+func (s *SoundcloudApi) GetUserWebProfiles(u *User, p *UrlParams) ([]*WebProfile, error) {
+    return u.getWebProfiles(s, p)
 }
 
 /*******************

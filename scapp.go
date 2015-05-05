@@ -1,3 +1,3 @@
 package gosoundcloud
 
-type App struct {}
+type ScApp struct {}

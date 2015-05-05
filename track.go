@@ -1,5 +1,5 @@
 package gosoundcloud
 
 type Track struct {
-    Created_with    *App
+    Created_with    *ScApp
 }

@@ -151,7 +151,7 @@ func (g *Group) getContributions(s *SoundcloudApi, p *UrlParams) ([]*Track, erro
     return slice, err
 }
 
-// should be redundant with GetTrack unless the track resouce have adicional data here - to confir
+// should be redundant with GetTrack unless the track resouce have adicional data here - to confirm
 //func (s *SoundcloudApi) GetGroupContributionsTrack(g *Group) ([]*Track, error) {
 //}
 
