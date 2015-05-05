@@ -8,17 +8,17 @@ import (
 
 // For what I understand you cannot create nor delete a group via api. - to confirm
 type Group struct {
-    Id                  uint64
-    Kind                string // to confirm if soundcloud respond with a kind for group types.
-    Created_at          string "2009/06/18 15:46:46 +0000"
-    Permalink           string "made-with-ableton-live"
-    Name                string "Made with Ableton Live!"
-    Short_description   string "tracks produced with Ableton Live! music software, no DJ mixes!"
-    Description         string "send your tracks, no DJ mixes please!"
-    Uri                 string "http://api.soundcloud.com/groups/3"
-    Artwork_url         string "http://i1.sndcdn.com/artworks-000000481400-f0ynk3-large.jpg?142a848"
-    Permalink_url       string "http://soundcloud.com/groups/made-with-ableton-live"
-    Creator             User
+    Id                uint64
+    Kind              string // to confirm if soundcloud respond with a kind for group types.
+    Created_at        string "2009/06/18 15:46:46 +0000"
+    Permalink         string "made-with-ableton-live"
+    Name              string "Made with Ableton Live!"
+    Short_description string "tracks produced with Ableton Live! music software, no DJ mixes!"
+    Description       string "send your tracks, no DJ mixes please!"
+    Uri               string "http://api.soundcloud.com/groups/3"
+    Artwork_url       string "http://i1.sndcdn.com/artworks-000000481400-f0ynk3-large.jpg?142a848"
+    Permalink_url     string "http://soundcloud.com/groups/made-with-ableton-live"
+    Creator           User
     /* user contains based on api docs
     "creator": {
         "id": 1433,

@@ -267,7 +267,25 @@ func (s *SoundcloudApi) GetPlaylists(p *UrlParams) ([]*Playlist, error) {
     return getPlaylists(s, p)
 }
 
-/****************
+/***************
+* APPS Methods *
+****************/
+
+func (s *SoundcloudApi) GetScApp(id uint64) (*ScApp, error) {
+    url := "/apps/" + strconv.FormatUint(id, 10)
+    resp, err := s.Get(url, nil)
+    a := NewScApp()
+    if err = processAndUnmarshalResponses(resp, err, a); err != nil {
+        return nil, err
+    }
+    return a, err
+}
+
+func (s *SoundcloudApi) GetScAppTracks(a *ScApp, p *UrlParams) ([]*Track, error) {
+    return a.getScAppTracks(s, p)
+}
+
+/****************s
 * USERS Methods *
 *****************/
 
