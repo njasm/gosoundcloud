@@ -1,3 +1,4 @@
+[![GoDoc](https://godoc.org/github.com/njasm/gosoundcloud?status.svg)](https://godoc.org/github.com/njasm/gosoundcloud)
 [![Build Status](https://travis-ci.org/njasm/gosoundcloud.svg?branch=master)](https://travis-ci.org/njasm/gosoundcloud) 
 [![Coverage Status](https://coveralls.io/repos/njasm/gosoundcloud/badge.svg?branch=master)](https://coveralls.io/r/njasm/gosoundcloud?branch=master)
 
