@@ -4,6 +4,7 @@ import (
     "errors"
     "strconv"
     "encoding/json"
+    "io/ioutil"
 )
 
 // For what I understand you cannot create nor delete a group via api. - to confirm
@@ -141,6 +142,29 @@ func (g *Group) getPendingTracks(s *SoundcloudApi, p *UrlParams) ([]*Track, erro
 //func (s *SoundcloudApi) GetGroupPendingTrack(g *Group, id uint64) (*Track, error) {
 //}
 
+func (g *Group) updatePendingTrack(s *SoundcloudApi, t *Track) (*Track, error) {
+    url := g.Uri + "/pending_tracks/" + strconv.FormatUint(t.Id, 10)
+    resp, err := s.Put(url, t)
+    if err = processAndUnmarshalResponses(resp, err, t); err != nil {
+        return nil, err
+    }
+    return t, err
+}
+
+func (g *Group) deletePendingTrack(s *SoundcloudApi, t *Track) error {
+    url := g.Uri + "/pending_tracks/" + strconv.FormatUint(t.Id, 10)
+    resp, err := s.Delete(url)
+    defer resp.Body.Close()
+    if err != nil {
+        return err
+    }
+    if resp.StatusCode == 200 {
+        return nil
+    }
+    bytes, _ := ioutil.ReadAll(resp.Body)
+    return errors.New(string(bytes))
+}
+
 func (g *Group) getContributions(s *SoundcloudApi, p *UrlParams) ([]*Track, error) {
     url := g.Uri + "/contributions"
     resp, err := s.Get(url, p)
@@ -151,9 +175,32 @@ func (g *Group) getContributions(s *SoundcloudApi, p *UrlParams) ([]*Track, erro
     return slice, err
 }
 
+func (g *Group) saveContribution(s *SoundcloudApi, t *Track) (*Track, error) {
+    url := g.Uri + "/contributions"
+    resp, err := s.Post(url, t)
+    if err = processAndUnmarshalResponses(resp, err, t); err != nil {
+        return nil, err
+    }
+    return t, err
+}
+
 // should be redundant with GetTrack unless the track resouce have adicional data here - to confirm
 //func (s *SoundcloudApi) GetGroupContributionsTrack(g *Group) ([]*Track, error) {
 //}
+
+func (g *Group) deleteContribution(s *SoundcloudApi, t *Track) error {
+    url := g.Uri + "/contributions/" + strconv.FormatUint(t.Id, 10)
+    resp, err := s.Delete(url)
+    defer resp.Body.Close()
+    if err != nil {
+        return err
+    }
+    if resp.StatusCode == 200 {
+        return nil
+    }
+    bytes, _ := ioutil.ReadAll(resp.Body)
+    return errors.New(string(bytes))
+}
 
 func (g Group) MarshalJSON() ([]byte, error) {
     j := map[string]map[string]interface{}{

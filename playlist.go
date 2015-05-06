@@ -32,7 +32,7 @@ type Playlist struct {
     Permalink_url   string
     Artwork_url     string
     User            *User
-    tracks          []*Track
+    Tracks          []*Track
 /*
 {
   "kind": "playlist",
@@ -389,7 +389,11 @@ type Playlist struct {
 }
 
 func NewPlaylist() *Playlist {
-    return &Playlist{Kind: "playlist"}
+    return &Playlist{
+        Kind: "playlist",
+        User: NewUser(),
+        Tracks: []*Track{},
+    }
 }
 
 func getPlaylists(s *SoundcloudApi, p *UrlParams) ([]*Playlist, error) {

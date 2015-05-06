@@ -157,16 +157,7 @@ func (s *SoundcloudApi) Resolve(searchUrl string) (*http.Response, error) {
 	return s.do(req)
 }
 
-// GetMe Requests the User resource of the authenticated user
-func (s *SoundcloudApi) GetMe() (*User, error) {
-    resp, err := s.Get("/me", nil)
-    u := NewUser()
-    if err = processAndUnmarshalResponses(resp, err, u); err != nil {
-        return nil, err
-    }
-    return u, nil
-}
-
+// GetLastResponse GetLastResponse from last request. a pointer to a http.Response
 func (s *SoundcloudApi) GetLastResponse() (*http.Response) {
     return s.response
 }
@@ -247,6 +238,16 @@ func processAndUnmarshalResponses(resp *http.Response, err error, holder interfa
         return err
     }
     return err
+}
+
+// GetMe Requests the User resource of the authenticated user
+func (s *SoundcloudApi) GetMe() (*User, error) {
+    resp, err := s.Get("/me", nil)
+    u := NewUser()
+    if err = processAndUnmarshalResponses(resp, err, u); err != nil {
+        return nil, err
+    }
+    return u, nil
 }
 
 /********************
@@ -400,11 +401,27 @@ func (s *SoundcloudApi) GetGroupPendingTracks(g *Group, p *UrlParams) ([]*Track,
 //    return g.GetPendingTrack(s, uint64())
 //}
 
+func (s *SoundcloudApi) UpdateGroupPendingTrack(g *Group, t *Track) (*Track, error) {
+    return g.updatePendingTrack(s ,t)
+}
+
+func (s *SoundcloudApi) DeleteGroupPendingTrack(g *Group, t *Track) error {
+    return g.deletePendingTrack(s, t)
+}
+
 func (s *SoundcloudApi) GetGroupContributions(g *Group, p *UrlParams) ([]*Track, error) {
     return g.getContributions(s, p)
+}
+
+func (s *SoundcloudApi) SaveGroupContribution(g *Group, t *Track) (*Track, error) {
+    return g.saveContribution(s, t)
 }
 
 // should be redundant with GetTrack unless the track resource have added data here - to confir
 //func (s *SoundcloudApi) GetGroupContributionsTrack(g *Group) ([]*Track, error) {
 //    return g.GetContributionsTrack(s)
 //}
+
+func (s *SoundcloudApi) DeleteGroupContribution(g *Group, t *Track) error {
+    return g.deleteContribution(s, t)
+}
