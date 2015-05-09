@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
-    "io/ioutil"
-    "strconv"
+	"strconv"
 
-    "golang.org/x/oauth2"
+	"golang.org/x/oauth2"
 )
 
 var BaseApiURL = "https://api.soundcloud.com"
@@ -31,29 +31,29 @@ type SoundcloudApi struct {
 }
 
 func validateNotEmptyString(m map[string]string) error {
-    for field, message := range m {
-        if field == "" {
-            return fmt.Errorf(message)
-        }
-    }
+	for field, message := range m {
+		if field == "" {
+			return fmt.Errorf(message)
+		}
+	}
 	return nil
 }
 
 func NewSoundcloudApi(c string, cs string, callback *string) (*SoundcloudApi, error) {
 	v := map[string]string{
-		c: "Client Id cannot be Blank",
+		c:  "Client Id cannot be Blank",
 		cs: "Client Secret cannot be Blank",
 	}
 	if err := validateNotEmptyString(v); err != nil {
 		return nil, err
 	}
-    if callback == nil {
-        empty := ""
-        callback = &empty
-    }
+	if callback == nil {
+		empty := ""
+		callback = &empty
+	}
 	conf := &oauth2.Config{
-		ClientID:     c,        //"CLIENT ID",
-		ClientSecret: cs,       //"CLIENT SECRET",
+		ClientID:     c,         //"CLIENT ID",
+		ClientSecret: cs,        //"CLIENT SECRET",
 		RedirectURL:  *callback, //"YOUR_REDIRECT_URL",
 		Scopes:       []string{"non-expiring"},
 		Endpoint: oauth2.Endpoint{
@@ -158,96 +158,96 @@ func (s *SoundcloudApi) Resolve(searchUrl string) (*http.Response, error) {
 }
 
 // GetLastResponse GetLastResponse from last request. a pointer to a http.Response
-func (s *SoundcloudApi) GetLastResponse() (*http.Response) {
-    return s.response
+func (s *SoundcloudApi) GetLastResponse() *http.Response {
+	return s.response
 }
 
 func (s *SoundcloudApi) SaveResource(r Saver) error {
-    return r.Save(s)
+	return r.Save(s)
 }
 
 func (s *SoundcloudApi) UpdateResource(r Updater) error {
-    return r.Update(s)
+	return r.Update(s)
 }
 
 func (s *SoundcloudApi) DeleteResource(r Deleter) error {
-    return r.Delete(s)
+	return r.Delete(s)
 }
 
 func buildUrlWithParams(url string, p *UrlParams) string {
-    url = buildUrl(url)
-    if p != nil && len(p.Values) > 0 {
-        url = url + "?" + p.Values.Encode()
-    }
-    return url
+	url = buildUrl(url)
+	if p != nil && len(p.Values) > 0 {
+		url = url + "?" + p.Values.Encode()
+	}
+	return url
 }
 
 func buildUrl(url string) string {
-    if len(url) >= 4 && url[:4] == "http" {
-        return url
-    }
-    url = cleanUrlPrefix(url)
-    url = prefixBaseUrlApi(url)
-    return url
+	if len(url) >= 4 && url[:4] == "http" {
+		return url
+	}
+	url = cleanUrlPrefix(url)
+	url = prefixBaseUrlApi(url)
+	return url
 }
 
 // cleanUrlPrefix adds a slash prefix if non-existent. only relative paths should call this function
 func cleanUrlPrefix(url string) string {
-    if url[:1] != "/" {
-        url = "/" + url
-    }
-    return url
+	if url[:1] != "/" {
+		url = "/" + url
+	}
+	return url
 }
 
 // prefixBaseUrlApi prefixes the soundcloud's api base url
 func prefixBaseUrlApi(url string) string {
-    return BaseApiURL + url
+	return BaseApiURL + url
 }
 
 // work-around for Soundcloud OAuth2 implementation,
 // header must be OAuth instead of bearer
 func defaultTokenType(t *oauth2.Token) {
-    if t.TokenType == "" {
-        t.TokenType = "OAuth"
-    }
+	if t.TokenType == "" {
+		t.TokenType = "OAuth"
+	}
 }
 
 // send http request
 func (s *SoundcloudApi) do(req *http.Request) (*http.Response, error) {
-    var err error
-    s.response, err = s.httpClient.Do(req)
-    if err != nil {
-        return nil, err
-    }
-    return s.response, nil
+	var err error
+	s.response, err = s.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	return s.response, nil
 }
 
-func processAndUnmarshalResponses(resp *http.Response, err error, holder interface{}) (error) {
-    if err != nil {
-        return err
-    }
+func processAndUnmarshalResponses(resp *http.Response, err error, holder interface{}) error {
+	if err != nil {
+		return err
+	}
 
-    //TODO: check if StatusCode is 40x/50x if so set the body as the error and return
+	//TODO: check if StatusCode is 40x/50x if so set the body as the error and return
 
-    data, err := ioutil.ReadAll(resp.Body)
-    defer resp.Body.Close()
-    if err != nil {
-        return err
-    }
-    if err = json.Unmarshal(data, holder); err != nil {
-        return err
-    }
-    return err
+	data, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if err != nil {
+		return err
+	}
+	if err = json.Unmarshal(data, holder); err != nil {
+		return err
+	}
+	return err
 }
 
 // GetMe Requests the User resource of the authenticated user
 func (s *SoundcloudApi) GetMe() (*User, error) {
-    resp, err := s.Get("/me", nil)
-    u := NewUser()
-    if err = processAndUnmarshalResponses(resp, err, u); err != nil {
-        return nil, err
-    }
-    return u, nil
+	resp, err := s.Get("/me", nil)
+	u := NewUser()
+	if err = processAndUnmarshalResponses(resp, err, u); err != nil {
+		return nil, err
+	}
+	return u, nil
 }
 
 /********************
@@ -255,17 +255,17 @@ func (s *SoundcloudApi) GetMe() (*User, error) {
 *********************/
 
 func (s *SoundcloudApi) GetPlaylist(id uint64) (*Playlist, error) {
-    url := "/playlists/" + strconv.FormatUint(id, 10)
-    resp, err := s.Get(url, nil)
-    p := NewPlaylist()
-    if err = processAndUnmarshalResponses(resp, err, p); err != nil {
-        return nil, err
-    }
-    return p, err
+	url := "/playlists/" + strconv.FormatUint(id, 10)
+	resp, err := s.Get(url, nil)
+	p := NewPlaylist()
+	if err = processAndUnmarshalResponses(resp, err, p); err != nil {
+		return nil, err
+	}
+	return p, err
 }
 
 func (s *SoundcloudApi) GetPlaylists(p *UrlParams) ([]*Playlist, error) {
-    return getPlaylists(s, p)
+	return getPlaylists(s, p)
 }
 
 /***************
@@ -273,17 +273,17 @@ func (s *SoundcloudApi) GetPlaylists(p *UrlParams) ([]*Playlist, error) {
 ****************/
 
 func (s *SoundcloudApi) GetScApp(id uint64) (*ScApp, error) {
-    url := "/apps/" + strconv.FormatUint(id, 10)
-    resp, err := s.Get(url, nil)
-    a := NewScApp()
-    if err = processAndUnmarshalResponses(resp, err, a); err != nil {
-        return nil, err
-    }
-    return a, err
+	url := "/apps/" + strconv.FormatUint(id, 10)
+	resp, err := s.Get(url, nil)
+	a := NewScApp()
+	if err = processAndUnmarshalResponses(resp, err, a); err != nil {
+		return nil, err
+	}
+	return a, err
 }
 
 func (s *SoundcloudApi) GetScAppTracks(a *ScApp, p *UrlParams) ([]*Track, error) {
-    return a.getScAppTracks(s, p)
+	return a.getScAppTracks(s, p)
 }
 
 /****************s
@@ -291,49 +291,93 @@ func (s *SoundcloudApi) GetScAppTracks(a *ScApp, p *UrlParams) ([]*Track, error)
 *****************/
 
 func (s *SoundcloudApi) GetUser(id uint64) (*User, error) {
-    url := "/users/" + strconv.FormatUint(id, 10)
-    resp, err := s.Get(url, nil)
-    u := NewUser()
-    if err = processAndUnmarshalResponses(resp, err, u); err != nil {
-        return nil, err
-    }
-    return u, err
+	url := "/users/" + strconv.FormatUint(id, 10)
+	resp, err := s.Get(url, nil)
+	u := NewUser()
+	if err = processAndUnmarshalResponses(resp, err, u); err != nil {
+		return nil, err
+	}
+	return u, err
 }
 
 func (s *SoundcloudApi) GetUsers(p *UrlParams) ([]*User, error) {
-    return getUsers(s, p)
+	return getUsers(s, p)
 }
 
 func (s *SoundcloudApi) GetUserTracks(u *User, p *UrlParams) ([]*Track, error) {
-    return u.getTracks(s, p)
+	return u.getTracks(s, p)
 }
 
 func (s *SoundcloudApi) GetUserFollowings(u *User, p *UrlParams) ([]*User, error) {
-    return u.getFollowings(s, p)
+	return u.getFollowings(s, p)
+}
+
+func (s *SoundcloudApi) AddUserFollowing(me *User, followed *User) (*User, error) {
+	if me == nil {
+		var err error
+		me, err = s.GetMe()
+		if err != nil {
+			return nil, err
+		}
+	}
+	return me.addFollowing(s, followed)
+}
+
+func (s *SoundcloudApi) DeleteUserFollowing(me *User, delete *User) error {
+	if me == nil {
+		var err error
+		me, err = s.GetMe()
+		if err != nil {
+			return err
+		}
+	}
+	return me.deleteFollowing(s, delete)
 }
 
 func (s *SoundcloudApi) GetUserFollowers(u *User, p *UrlParams) ([]*User, error) {
-    return u.getFollowers(s, p)
+	return u.getFollowers(s, p)
 }
 
 func (s *SoundcloudApi) GetUserComments(u *User, p *UrlParams) ([]*Comment, error) {
-    return u.getComments(s, p)
+	return u.getComments(s, p)
 }
 
 func (s *SoundcloudApi) GetUserFavorites(u *User, p *UrlParams) ([]*Track, error) {
-    return u.getFavorites(s, p)
+	return u.getFavorites(s, p)
+}
+
+func (s *SoundcloudApi) AddUserFavorite(me *User, t *Track) (*Track, error) {
+	if me == nil {
+		var err error
+		me, err = s.GetMe()
+		if err != nil {
+			return nil, err
+		}
+	}
+	return me.addFavorite(s, t)
+}
+
+func (s *SoundcloudApi) DeleteUserFavorite(me *User, t *Track) error {
+	if me == nil {
+		var err error
+		me, err = s.GetMe()
+		if err != nil {
+			return err
+		}
+	}
+	return me.deleteFavorite(s, t)
 }
 
 func (s *SoundcloudApi) GetUserPlaylists(u *User, p *UrlParams) ([]*Playlist, error) {
-    return u.getPlaylists(s, p)
+	return u.getPlaylists(s, p)
 }
 
 func (s *SoundcloudApi) GetUserGroups(u *User, p *UrlParams) ([]*Group, error) {
-    return u.getGroups(s, p)
+	return u.getGroups(s, p)
 }
 
 func (s *SoundcloudApi) GetUserWebProfiles(u *User, p *UrlParams) ([]*WebProfile, error) {
-    return u.getWebProfiles(s, p)
+	return u.getWebProfiles(s, p)
 }
 
 /*******************
@@ -341,17 +385,17 @@ func (s *SoundcloudApi) GetUserWebProfiles(u *User, p *UrlParams) ([]*WebProfile
 *******************/
 
 func (s *SoundcloudApi) GetComment(id uint64) (*Comment, error) {
-    url := "/comments/" + strconv.FormatUint(id, 10)
-    resp, err := s.Get(url, nil)
-    c := NewComment()
-    if err = processAndUnmarshalResponses(resp, err, c); err != nil {
-        return nil, err
-    }
-    return c, err
+	url := "/comments/" + strconv.FormatUint(id, 10)
+	resp, err := s.Get(url, nil)
+	c := NewComment()
+	if err = processAndUnmarshalResponses(resp, err, c); err != nil {
+		return nil, err
+	}
+	return c, err
 }
 
 func (s *SoundcloudApi) GetComments(p *UrlParams) ([]*Comment, error) {
-    return getComments(s, p)
+	return getComments(s, p)
 }
 
 /*****************
@@ -359,41 +403,41 @@ func (s *SoundcloudApi) GetComments(p *UrlParams) ([]*Comment, error) {
 ******************/
 
 func (s *SoundcloudApi) GetGroup(id uint64) (*Group, error) {
-    url := "/groups/" + strconv.FormatUint(id, 10)
-    resp, err := s.Get(url, nil)
-    g := NewGroup()
-    if err = processAndUnmarshalResponses(resp, err, g); err != nil {
-        return nil, err
-    }
-    return g, err
+	url := "/groups/" + strconv.FormatUint(id, 10)
+	resp, err := s.Get(url, nil)
+	g := NewGroup()
+	if err = processAndUnmarshalResponses(resp, err, g); err != nil {
+		return nil, err
+	}
+	return g, err
 }
 
-func (s *SoundcloudApi) GetGroups(p *UrlParams) ([]*Group, error){
-    return getGroups(s, p)
+func (s *SoundcloudApi) GetGroups(p *UrlParams) ([]*Group, error) {
+	return getGroups(s, p)
 }
 
 func (s *SoundcloudApi) GetGroupModerators(g *Group, p *UrlParams) ([]*User, error) {
-    return g.getModerators(s, p)
+	return g.getModerators(s, p)
 }
 
 func (s *SoundcloudApi) GetGroupMembers(g *Group, p *UrlParams) ([]*User, error) {
-    return g.getMembers(s, p)
+	return g.getMembers(s, p)
 }
 
 func (s *SoundcloudApi) GetGroupContributors(g *Group, p *UrlParams) ([]*User, error) {
-    return g.getContributors(s, p)
+	return g.getContributors(s, p)
 }
 
 func (s *SoundcloudApi) GetGroupUsers(g *Group, p *UrlParams) ([]*User, error) {
-    return g.getUsers(s, p)
+	return g.getUsers(s, p)
 }
 
 func (s *SoundcloudApi) GetGroupTracks(g *Group, p *UrlParams) ([]*Track, error) {
-    return g.getTracks(s, p)
+	return g.getTracks(s, p)
 }
 
 func (s *SoundcloudApi) GetGroupPendingTracks(g *Group, p *UrlParams) ([]*Track, error) {
-    return g.getPendingTracks(s, p)
+	return g.getPendingTracks(s, p)
 }
 
 // should be redundant with GetTrack unless the track resource have added data here - to confirm
@@ -402,19 +446,19 @@ func (s *SoundcloudApi) GetGroupPendingTracks(g *Group, p *UrlParams) ([]*Track,
 //}
 
 func (s *SoundcloudApi) UpdateGroupPendingTrack(g *Group, t *Track) (*Track, error) {
-    return g.updatePendingTrack(s ,t)
+	return g.updatePendingTrack(s, t)
 }
 
 func (s *SoundcloudApi) DeleteGroupPendingTrack(g *Group, t *Track) error {
-    return g.deletePendingTrack(s, t)
+	return g.deletePendingTrack(s, t)
 }
 
 func (s *SoundcloudApi) GetGroupContributions(g *Group, p *UrlParams) ([]*Track, error) {
-    return g.getContributions(s, p)
+	return g.getContributions(s, p)
 }
 
 func (s *SoundcloudApi) SaveGroupContribution(g *Group, t *Track) (*Track, error) {
-    return g.saveContribution(s, t)
+	return g.saveContribution(s, t)
 }
 
 // should be redundant with GetTrack unless the track resource have added data here - to confir
@@ -423,5 +467,5 @@ func (s *SoundcloudApi) SaveGroupContribution(g *Group, t *Track) (*Track, error
 //}
 
 func (s *SoundcloudApi) DeleteGroupContribution(g *Group, t *Track) error {
-    return g.deleteContribution(s, t)
+	return g.deleteContribution(s, t)
 }

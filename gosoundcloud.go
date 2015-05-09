@@ -13,7 +13,7 @@ type Deleter interface {
 }
 
 type Resourcer interface {
-	GetId()     uint64
-	GetKind()   string
-	IsNew()     bool
+	GetId() uint64
+	GetKind() string
+	IsNew() bool
 }
