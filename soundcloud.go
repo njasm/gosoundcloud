@@ -380,7 +380,7 @@ func (s *SoundcloudApi) GetUserWebProfiles(u *User, p *UrlParams) ([]*WebProfile
 	return u.getWebProfiles(s, p)
 }
 
-func (s *SoundcloudApi) GetUserWebProfile(u *User, id uint64) ([]*WebProfile, error) {
+func (s *SoundcloudApi) GetUserWebProfile(u *User, id uint64) (*WebProfile, error) {
 	return u.getWebProfile(s, id)
 }
 
