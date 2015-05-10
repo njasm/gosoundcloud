@@ -242,6 +242,21 @@ func (u *User) getWebProfiles(s *SoundcloudApi, p *UrlParams) ([]*WebProfile, er
 	return slice, err
 }
 
+func (u *User) getWebProfile(s *SoundcloudApi, id uint64) (*WebProfile, error) {
+	url := u.Uri + "/web-profiles/" + strconv.FormatUint(id, 10)
+	resp, err := s.Get(url, nil)
+	p := NewWebProfile()
+	if err = processAndUnmarshalResponses(resp, err, p); err != nil {
+		return nil, err
+	}
+	return p, err
+}
+
+// use Exported DeleteResource
+//func (u *User) deleteWebProfile(s *SoundcloudApi, *WebProfile) error {
+//
+//}
+
 func (u User) MarshalJSON() ([]byte, error) {
 	j := map[string]map[string]interface{}{
 		"user": {
