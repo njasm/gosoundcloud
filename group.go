@@ -3,7 +3,6 @@ package gosoundcloud
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"strconv"
 )
 
@@ -64,8 +63,8 @@ func (g *Group) Delete(s *SoundcloudApi) error {
 	}
 
 	url := "/groups/" + strconv.FormatUint(g.Id, 10)
-	_, err := s.Delete(url)
-	return err
+	resp, err := s.Delete(url)
+	return processDeleteResponses(resp, err)
 }
 
 func getGroups(s *SoundcloudApi, p *UrlParams) ([]*Group, error) {
@@ -154,15 +153,7 @@ func (g *Group) updatePendingTrack(s *SoundcloudApi, t *Track) (*Track, error) {
 func (g *Group) deletePendingTrack(s *SoundcloudApi, t *Track) error {
 	url := g.Uri + "/pending_tracks/" + strconv.FormatUint(t.Id, 10)
 	resp, err := s.Delete(url)
-	defer resp.Body.Close()
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode == 200 {
-		return nil
-	}
-	bytes, _ := ioutil.ReadAll(resp.Body)
-	return errors.New(string(bytes))
+	return processDeleteResponses(resp, err)
 }
 
 func (g *Group) getContributions(s *SoundcloudApi, p *UrlParams) ([]*Track, error) {
@@ -191,15 +182,7 @@ func (g *Group) saveContribution(s *SoundcloudApi, t *Track) (*Track, error) {
 func (g *Group) deleteContribution(s *SoundcloudApi, t *Track) error {
 	url := g.Uri + "/contributions/" + strconv.FormatUint(t.Id, 10)
 	resp, err := s.Delete(url)
-	defer resp.Body.Close()
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode == 200 {
-		return nil
-	}
-	bytes, _ := ioutil.ReadAll(resp.Body)
-	return errors.New(string(bytes))
+	return processDeleteResponses(resp, err)
 }
 
 func (g Group) MarshalJSON() ([]byte, error) {

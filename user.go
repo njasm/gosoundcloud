@@ -3,7 +3,6 @@ package gosoundcloud
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"strconv"
 )
 
@@ -150,15 +149,7 @@ func (u *User) addFollowing(s *SoundcloudApi, followed *User) (*User, error) {
 func (u *User) deleteFollowing(s *SoundcloudApi, other *User) error {
 	url := u.Uri + "/followings/" + strconv.FormatUint(other.Id, 10)
 	resp, err := s.Delete(url)
-	defer resp.Body.Close()
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode == 200 {
-		return nil
-	}
-	bytes, _ := ioutil.ReadAll(resp.Body)
-	return errors.New(string(bytes))
+	return processDeleteResponses(resp, err)
 }
 
 func (u *User) getFollowers(s *SoundcloudApi, p *UrlParams) ([]*User, error) {
@@ -211,15 +202,7 @@ func (u *User) addFavorite(s *SoundcloudApi, t *Track) (*Track, error) {
 func (u *User) deleteFavorite(s *SoundcloudApi, t *Track) error {
 	url := u.Uri + "/favorites/" + strconv.FormatUint(t.Id, 10)
 	resp, err := s.Delete(url)
-	defer resp.Body.Close()
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode == 200 {
-		return nil
-	}
-	bytes, _ := ioutil.ReadAll(resp.Body)
-	return errors.New(string(bytes))
+	return processDeleteResponses(resp, err)
 }
 
 func (u *User) getGroups(s *SoundcloudApi, p *UrlParams) ([]*Group, error) {

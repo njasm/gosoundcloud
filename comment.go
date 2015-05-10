@@ -65,8 +65,8 @@ func (c *Comment) Delete(s *SoundcloudApi) error {
 	}
 
 	url := "/comments/" + strconv.FormatUint(c.Id, 10)
-	_, err := s.Delete(url)
-	return err
+	resp, err := s.Delete(url)
+	return processDeleteResponses(resp, err)
 }
 
 func getComments(s *SoundcloudApi, p *UrlParams) ([]*Comment, error) {

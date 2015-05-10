@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -220,24 +219,6 @@ func (s *SoundcloudApi) do(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 	return s.response, nil
-}
-
-func processAndUnmarshalResponses(resp *http.Response, err error, holder interface{}) error {
-	if err != nil {
-		return err
-	}
-
-	//TODO: check if StatusCode is 40x/50x if so set the body as the error and return
-
-	data, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-	if err != nil {
-		return err
-	}
-	if err = json.Unmarshal(data, holder); err != nil {
-		return err
-	}
-	return err
 }
 
 // GetMe Requests the User resource of the authenticated user

@@ -2,8 +2,6 @@ package gosoundcloud
 
 import (
 	"encoding/json"
-	"errors"
-	"io/ioutil"
 )
 
 type WebProfile struct {
@@ -24,15 +22,7 @@ func NewWebProfile() *WebProfile {
 
 func (wp *WebProfile) Delete(s *SoundcloudApi) error {
 	resp, err := s.Delete(wp.Url)
-	defer resp.Body.Close()
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode == 200 {
-		return nil
-	}
-	bytes, _ := ioutil.ReadAll(resp.Body)
-	return errors.New(string(bytes))
+	return processDeleteResponses(resp, err)
 }
 
 func (wp WebProfile) MarshalJSON() ([]byte, error) {
