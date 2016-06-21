@@ -28,10 +28,10 @@ type Resourcer interface {
 //processAndUnmarshalResponses to process GET PUT POST request's responses. if the response have statusCode != 200
 //then the response body will be unmarshalled into an error string and returned.
 func processAndUnmarshalResponses(resp *http.Response, err error, holder interface{}) error {
-	defer resp.Body.Close()
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		bytes, _ := ioutil.ReadAll(resp.Body)
